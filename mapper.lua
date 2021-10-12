@@ -5,7 +5,7 @@ local tree = require("tree")
 local linkedList = require("linkedList")
 local posLink = require("posLink")
 
-local Mapper = {
+local Mapper = {-- A glorified version of Kruskal's Algorithm the cells in the maze aren't all uniform squares.
     new = function(self, mapSize, maxRoomSize)
         local map = {} -- a 2D array of trees. The tree values are cells.
         local exportMap = {} -- a 2D array of cellTypes.
@@ -32,7 +32,8 @@ local Mapper = {
                 end
             end
         end
-
+        
+        -- This while loop is what creates all the rooms. 
         while points:getSize() > 0 do -- This while loop could probably be optimized a little (a lot).
             local index = math.random(points:getSize())
             local cellTree = points:removeIndex(index) -- get the starting point for the room
@@ -175,6 +176,7 @@ local Mapper = {
             end
         end
 
+        -- This while loop connects all the rooms so there is only one path from one room to another
         while borders:getSize() > 0 do
             local index = math.random(borders:getSize())
             local borderLink = borders:removeIndex(index)
