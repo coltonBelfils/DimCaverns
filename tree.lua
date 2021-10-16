@@ -1,37 +1,37 @@
 local linkedList = require("linkedList")
 
-local Tree = {
-    new = function(self, value)
-        local nTree = {}
+local Tree = {}
 
-        nTree.value = value
-        nTree.children = linkedList:new()
-        nTree.parent = nil
+function Tree:new(value)
+    local nTree = {}
 
-        setmetatable(nTree, self)
+    nTree.value = value
+    nTree.children = linkedList:new()
+    nTree.parent = nil
 
-        return nTree
-    end
-}
+    setmetatable(nTree, self)
+
+    return nTree
+end
 
 Tree.__index = Tree
-Tree.__tostring = function(self)
+function Tree:__tostring()
     return "Value: " .. tostring(self.value) .. ", Parent: [ " .. tostring(self.parent) .. " ] "
 end
 
-Tree.getValue = function(self)
+function Tree:getValue()
     return self.value
 end
 
-Tree.getParent = function(self)
+function Tree:getParent()
     return self.parent
 end
 
-Tree.getParentValue = function(self)
+function Tree:getParentValue()
     return self.parent.value
 end
 
-Tree.getTopParent = function(self)
+function Tree.getTopParent()
     assert(self ~= nil, "self is nil")
     local top = self
     while top.parent ~= nil do
@@ -40,7 +40,7 @@ Tree.getTopParent = function(self)
     return top
 end
 
-Tree.getChildren = function(self)
+function Tree.getChildren()
     local childArray = {}
     for i = 1, self.children:getSize(), 1 do
         table.insert(childArray, self.children:get(i))
@@ -48,7 +48,7 @@ Tree.getChildren = function(self)
     return childArray
 end
 
-Tree.getChildValues = function(self)
+function Tree.getChildValues()
     local childArray = {}
     for i = 1, self.children:getSize(), 1 do
         table.insert(childArray, self.children:get(i).value)
@@ -56,13 +56,13 @@ Tree.getChildValues = function(self)
     return childArray
 end
 
-Tree.graft = function(self, childTree)
+function Tree.graft(childTree)
     local newChild = childTree:getTopParent()
     newChild.parent = self
     self.children:addLast(newChild)
 end
 
-Tree.removeBranch = function(self)
+function Tree.removeBranch()
     assert(self.parent ~= nil, "tree.detach(): Tree does not have a parent to detach from.")
     for i = 1, self.parent.children:getSize(), 1 do
         if self.parent.children:get(i) == self then
@@ -73,7 +73,7 @@ Tree.removeBranch = function(self)
     self.parent = nil
 end
 
-Tree.removeNode = function(self)
+function Tree.removeNode()
     if self.parent ~= nil then
         while self.children:getSize() > 0 do
             local move = self.children:removeFirst()
@@ -90,11 +90,11 @@ Tree.removeNode = function(self)
     end
 end
 
-Tree.printTree = function(self) -- prints layers of the tree not connections
+function Tree.printTree() -- prints layers of the tree not connections
     self:getTopParent():printTreeHelp(1)
 end
 
-Tree.printTreeHelp = function(self, layerNum)
+function Tree.printTreeHelp(layerNum)
     if self.children:getSize() > 0 then
         print(tostring(self.value.pos) .. " -> " .. "(" .. layerNum .. "){")
         for i = 1, self.children:getSize(), 1 do

@@ -1,18 +1,18 @@
-local AnimationOffset = {
-    new = function(self)
-        local nOffset = {}
+local AnimationOffset = {}
 
-        nOffset.x = 0
-        nOffset.y = 0
+function AnimationOffset:new()
+    local nOffset = {}
 
-        setmetatable(nOffset, self)
+    nOffset.x = 0
+    nOffset.y = 0
 
-        return nOffset
-    end,
-}
+    setmetatable(nOffset, self)
+
+    return nOffset
+end
 
 AnimationOffset.__index = AnimationOffset
-AnimationOffset.__tostring = function(self)
+function AnimationOffset:__tostring()
     return "x:" .. self.x .. "-y:" .. self.y
 end
 

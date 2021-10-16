@@ -15,4 +15,6 @@ What I'm looking for feedback on (in no real order):
 
 If anyone has enough feedback and would be willing, I'd love to do a zoom call or something to get some deeper, more fleshed-out feedback.
 
+Thanks for taking a look and giving some feedback!
+
 DimCaverns.html is a quick way to give it a try is you don't want to setup lua/love2d. If you view it this way the cli output is in the dev console. Thanks to Bernhard Schelling: https://github.com/schellingb/LoveWebBuilder for the quick and easy tool.

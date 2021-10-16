@@ -1,21 +1,21 @@
-local Pos = {
-    new = function(self, x, y)
-        local nPos = {}
+local Pos = {}
 
-        nPos.x = x
-        nPos.y = y
+function Pos:new(x, y)
+    local nPos = {}
 
-        setmetatable(nPos, self)
+    nPos.x = x
+    nPos.y = y
 
-        return nPos
-    end,
-}
+    setmetatable(nPos, self)
 
-Pos.id = function(self)
+    return nPos
+end
+
+function Pos:id()
     return "" .. self.x .. "-" .. self.y
 end
 Pos.__index = Pos
-Pos.__tostring = function(self)
+function Pos:__tostring()
     return "(" .. self.x .. "," .. self.y .. ")"
 end
 

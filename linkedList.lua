@@ -1,34 +1,34 @@
-local LinkedList = {
-    new = function(self)
-        local nLL = {}
+local LinkedList = {}
 
-        nLL.size = 0
-        nLL.onHand = {} -- holds nodes that the user may need for soon to save time. May need to make this less agressive in saving nodes if memory is a concern, idk.
-        nLL.head = {}
-        nLL.tail = {
-            prev = nLL.head
-        }
-        nLL.head.next = nLL.tail
+function LinkedList:new()
+    local nLL = {}
 
-        setmetatable(nLL, self)
+    nLL.size = 0
+    nLL.onHand = {} -- holds nodes that the user may need for soon to save time. May need to make this less agressive in saving nodes if memory is a concern, idk.
+    nLL.head = {}
+    nLL.tail = {
+        prev = nLL.head
+    }
+    nLL.head.next = nLL.tail
 
-        return nLL
-    end
-}
+    setmetatable(nLL, self)
+
+    return nLL
+end
 
 LinkedList.__index = LinkedList
-LinkedList.__tostring = function(self)
+function LinkedList:__tostring()
     return ""
 end
 
-LinkedList.getSize = function(self)
+function LinkedList:getSize()
     if self.head.next == self.tail then
         self.size = 0
     end
     return self.size
 end
 
-LinkedList.addFirst = function(self, value)
+function LinkedList:addFirst(value)
     local first = self.head.next
     self.head.next = {
         value = value,
@@ -40,7 +40,7 @@ LinkedList.addFirst = function(self, value)
     self.size = self.size + 1
 end
 
-LinkedList.addLast = function(self, value)
+function LinkedList:addLast(value)
     local last = self.tail.prev
     self.tail.prev = {
         value = value,
@@ -51,7 +51,7 @@ LinkedList.addLast = function(self, value)
     self.size = self.size + 1
 end
 
-LinkedList.addIndex = function(self, value, index) -- inserts after the spesified index. Index 0 is addFirst. Index size is addLast
+function LinkedList:addIndex(value, index) -- inserts after the spesified index. Index 0 is addFirst. Index size is addLast
     assert(type(index) == "number") -- this needs to turn into function decorators and the checks lib
     assert(index >= 0 and index <= self.size, "Invalid Linked List index: " .. index)
     local cur = self.head
@@ -70,7 +70,7 @@ LinkedList.addIndex = function(self, value, index) -- inserts after the spesifie
     self.size = self.size + 1
 end
 
-LinkedList.removeFirst = function(self)
+function LinkedList:removeFirst()
     assert(self.size > 0, "No Linked List items to remove")
     local value = self.head.next.value
     self.head.next = self.head.next.next
@@ -80,7 +80,7 @@ LinkedList.removeFirst = function(self)
     return value
 end
 
-LinkedList.removeLast = function(self)
+function LinkedList:removeLast()
     assert(self.size > 0, "No Linked List items to remove")
     local value = self.tail.prev.value
     self.tail.prev = self.tail.prev.prev
@@ -90,7 +90,7 @@ LinkedList.removeLast = function(self)
     return value
 end
 
-LinkedList.removeIndex = function(self, index)
+function LinkedList:emoveIndex(index)
     assert(type(index) == "number") -- this needs to turn into function decorators and the checks lib
     assert(index > 0 and index <= self.size, "Invalid Linked List index: " .. index)
     local cur = self.head -- check on-hand table before going through the for loop
@@ -103,7 +103,7 @@ LinkedList.removeIndex = function(self, index)
     return cur.value
 end
 
-LinkedList.get = function(self, index)
+function LinkedList:get(index)
     assert(type(index) == "number") -- this needs to turn into function decorators and the checks lib
     assert(index > 0 and index <= self.size, "Invalid Linked List index: " .. index)
     -- check on-hand table before traversing to that index
@@ -131,7 +131,7 @@ LinkedList.get = function(self, index)
     end
 end
 
-LinkedList.printList = function(self)
+function LinkedList:printList()
     local cur = self.head
     for i = 1, self.size, 1 do
         cur = cur.next

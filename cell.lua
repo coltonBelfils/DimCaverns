@@ -1,20 +1,20 @@
 local cellType = require("CellType")
 
-local Cell = {
-    new = function(self, cellType, pos)
-        local nCell = {}
+local Cell = {}
 
-        nCell.cellType = cellType
-        nCell.pos = pos
+function Cell:new(cellType, pos)
+    local nCell = {}
 
-        setmetatable(nCell, self)
+    nCell.cellType = cellType
+    nCell.pos = pos
 
-        return nCell
-    end
-}
+    setmetatable(nCell, self)
+
+    return nCell
+end
 
 Cell.__index = Cell
-Cell.__tostring = function(self)
+function Cell:__tostring()
     return tostring(self.cellType)
 end
 

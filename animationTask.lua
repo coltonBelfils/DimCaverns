@@ -1,33 +1,33 @@
-local AnimationTask = {
-    new = function(self, currentPos, destinationPos, duration, animationOffset)
-        local nTask = {}
+local AnimationTask = {}
 
-        nTask.currentPos = currentPos
-        nTask.destinationPos = destinationPos
-        nTask.duration = duration
-        -- nTask.progress = 0 --this will take some more work to do becaue this is essenchaly offset/delta and delta can be 0
-        nTask.offset = animationOffset
+function AnimationTask:new(currentPos, destinationPos, duration, animationOffset)
+    local nTask = {}
 
-        nTask.xDelta = nTask.destinationPos.x - nTask.currentPos.x
-        nTask.yDelta = nTask.destinationPos.y - nTask.currentPos.y
+    nTask.currentPos = currentPos
+    nTask.destinationPos = destinationPos
+    nTask.duration = duration
+    -- nTask.progress = 0 --this will take some more work to do becaue this is essenchaly offset/delta and delta can be 0
+    nTask.offset = animationOffset
 
-        if nTask.duration <= 0 then
-            nTask.offset.x = nTask.xDelta
-            nTask.offset.y = nTask.yDelta
-        end
+    nTask.xDelta = nTask.destinationPos.x - nTask.currentPos.x
+    nTask.yDelta = nTask.destinationPos.y - nTask.currentPos.y
 
-        setmetatable(nTask, self)
-
-        return nTask
+    if nTask.duration <= 0 then
+        nTask.offset.x = nTask.xDelta
+        nTask.offset.y = nTask.yDelta
     end
-}
+
+    setmetatable(nTask, self)
+
+    return nTask
+end
 
 AnimationTask.__index = AnimationTask
-AnimationTask.__tostring = function(self)
+function AnimationTask:__tostring()
     return "task"
 end
 
-AnimationTask.updateTask = function(self, dt)
+function AnimationTask:updateTask(dt)
     if self.duration <= 0 then
         self.currentPos.x = self.destinationPos.x
         self.currentPos.y = self.destinationPos.y
