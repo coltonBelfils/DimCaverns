@@ -31,7 +31,7 @@ function Tree:getParentValue()
     return self.parent.value
 end
 
-function Tree.getTopParent()
+function Tree:getTopParent()
     assert(self ~= nil, "self is nil")
     local top = self
     while top.parent ~= nil do
@@ -40,7 +40,7 @@ function Tree.getTopParent()
     return top
 end
 
-function Tree.getChildren()
+function Tree:getChildren()
     local childArray = {}
     for i = 1, self.children:getSize(), 1 do
         table.insert(childArray, self.children:get(i))
@@ -48,7 +48,7 @@ function Tree.getChildren()
     return childArray
 end
 
-function Tree.getChildValues()
+function Tree:getChildValues()
     local childArray = {}
     for i = 1, self.children:getSize(), 1 do
         table.insert(childArray, self.children:get(i).value)
@@ -56,13 +56,13 @@ function Tree.getChildValues()
     return childArray
 end
 
-function Tree.graft(childTree)
+function Tree:graft(childTree)
     local newChild = childTree:getTopParent()
     newChild.parent = self
     self.children:addLast(newChild)
 end
 
-function Tree.removeBranch()
+function Tree:removeBranch()
     assert(self.parent ~= nil, "tree.detach(): Tree does not have a parent to detach from.")
     for i = 1, self.parent.children:getSize(), 1 do
         if self.parent.children:get(i) == self then
@@ -73,7 +73,7 @@ function Tree.removeBranch()
     self.parent = nil
 end
 
-function Tree.removeNode()
+function Tree:removeNode()
     if self.parent ~= nil then
         while self.children:getSize() > 0 do
             local move = self.children:removeFirst()
@@ -90,11 +90,11 @@ function Tree.removeNode()
     end
 end
 
-function Tree.printTree() -- prints layers of the tree not connections
+function Tree:printTree() -- prints layers of the tree not connections
     self:getTopParent():printTreeHelp(1)
 end
 
-function Tree.printTreeHelp(layerNum)
+function Tree:printTreeHelp(layerNum)
     if self.children:getSize() > 0 then
         print(tostring(self.value.pos) .. " -> " .. "(" .. layerNum .. "){")
         for i = 1, self.children:getSize(), 1 do

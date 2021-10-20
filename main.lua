@@ -4,6 +4,7 @@ local pos = require("pos")
 local animationManager = require("animationManager")
 local animationTask = require("animationTask")
 local animationOffset = require("animationOffset")
+local ropeItem = require("ropeItem")
 
 local black = {0, 0, 0}
 local white = {1, 1, 1}
@@ -26,6 +27,8 @@ local MAP_ANIMATION_ID = "MAP_ANIMATION_ID"
 local playerAnimationOffset = animationOffset:new() -- do this for map too and then put it in the key press and draw functions
 local mapAnimationOffset = animationOffset:new()
 
+local rope
+
 function love.load()
     print("Seed: " .. seed)
 
@@ -35,17 +38,18 @@ function love.load()
     love.graphics.setColor(white)
 
     bigMap = mapper:new(mapSize, maxRoomSize)
+    rope = ropeItem:new(bigMap.map)
     printMap()
 
     if bigMap.map[2][2] == cellType.PATH then
         centerLocation = pos:new(2, 2)
-        --playerLocation = pos:new(2, 2)
+        -- playerLocation = pos:new(2, 2)
     elseif bigMap.map[3][2] == cellType.PATH then
         centerLocation = pos:new(3, 2)
-        --playerLocation = pos:new(3, 2)
+        -- playerLocation = pos:new(3, 2)
     elseif bigMap.map[2][3] == cellType.PATH then
         centerLocation = pos:new(2, 3)
-        --playerLocation = pos:new(2, 3)
+        -- playerLocation = pos:new(2, 3)
     else
         error("starting player location didn't work")
     end
@@ -53,13 +57,14 @@ function love.load()
     playerLocation = pos:new(3, 3)
 
     smallMap = getSmallMap(centerLocation, bigMap)
+    -- rope:equip(smallToBigPos(playerLocation, centerLocation))
 end
 
 function printMap()
     local str = ""
     for y = mapSize, 1, -1 do
         for x = 1, mapSize, 1 do
-            str = str .. tostring(bigMap.map[x][y])
+            str = str .. tostring(bigMap.map[x][y].print)
         end
         str = str .. "\n"
     end
@@ -67,29 +72,23 @@ function printMap()
 end
 
 function love.update(dt)
-    --animationManager:updateTasks(dt)
-    --smallMap = getSmallMap(centerLocation, bigMap)
+    -- animationManager:updateTasks(dt)
+    -- smallMap = getSmallMap(centerLocation, bigMap)
 end
 
 function love.draw()
     for x = 0, 6, 1 do
         for y = 0, 6, 1 do
             local type = smallMap[x][y]
-            if type == cellType.PATH then
-                love.graphics.setColor(white)
-            else
-                love.graphics.setColor(black)
-            end
-            love.graphics.rectangle("fill", (((x - 1) * 48) + 80) - (mapAnimationOffset.x * 48),
-                ((((y * -1) + 6) - 1) * 48) + (mapAnimationOffset.y * 48), 48, 48) -- The (y * -1) + 6) part is because the y axis needs to be inverted. The drawing canvas has (0,0) in the upper left, but the maps have it in the lower left.
+            love.graphics.setColor(type.color or black)
+            love.graphics.rectangle("fill", (((x - 1) * 48) + 80) - (mapAnimationOffset.x * 48), ((((y * -1) + 6) - 1) * 48) + (mapAnimationOffset.y * 48), 48, 48) -- The (y * -1) + 6) part is because the y axis needs to be inverted. The drawing canvas has (0,0) in the upper left, but the maps have it in the lower left.
         end
     end
 
     love.graphics.setColor({1, 0, 0})
 
-    --local smallPlayerLocation = bigToSmallPos(playerLocation, centerLocation)
-    love.graphics.rectangle("fill", (((playerLocation.x - 1) * 48) + 80) + (playerAnimationOffset.x * 48),
-        ((((playerLocation.y * -1) + 6) - 1) * 48) - (playerAnimationOffset.y * 48), 48, 48) -- The (y * -1) + 6) part is because the y axis needs to be inverted. The drawing canvas has (0,0) in the upper left, but the maps have it in the lower left.
+    -- local smallPlayerLocation = bigToSmallPos(playerLocation, centerLocation)
+    love.graphics.rectangle("fill", (((playerLocation.x - 1) * 48) + 80) + (playerAnimationOffset.x * 48), ((((playerLocation.y * -1) + 6) - 1) * 48) - (playerAnimationOffset.y * 48), 48, 48) -- The (y * -1) + 6) part is because the y axis needs to be inverted. The drawing canvas has (0,0) in the upper left, but the maps have it in the lower left.
 
     love.graphics.setColor({.5, .5, .5})
     love.graphics.rectangle("fill", 0, 0, 80, 240)
@@ -99,7 +98,7 @@ end
 function love.keypressed(key, scancode, isrepeat) -- something's not right with the up and down movement. I think the small map may be upside-down somehow or something like that.
     if not isrepeat then
         local newPlayerLocation = playerLocation
-        --local smallPlayerLocation = bigToSmallPos(playerLocation, centerLocation)
+        -- local smallPlayerLocation = bigToSmallPos(playerLocation, centerLocation)
         local newCenterLocation = centerLocation
         if key == 'w' then
             newPlayerLocation = pos:new(playerLocation.x, playerLocation.y + 1)
@@ -125,15 +124,23 @@ function love.keypressed(key, scancode, isrepeat) -- something's not right with 
                 newCenterLocation = pos:new(centerLocation.x - 1, centerLocation.y)
                 newPlayerLocation = pos:new(2, newPlayerLocation.y)
             end
+        elseif key == 'e' then
+            local bigPlayerPos = smallToBigPos(playerLocation, centerLocation)
+            if rope.equiped then
+                rope:unequip(bigPlayerPos)
+            else
+                rope:equip(bigPlayerPos)
+            end
         end
 
         local bigPlayerPos = smallToBigPos(newPlayerLocation, newCenterLocation)
-        if bigMap.map[bigPlayerPos.x][bigPlayerPos.y] == cellType.PATH then
-            --animationManager:addTask(animationTask:new(centerLocation, newCenterLocation, .08, mapAnimationOffset), MAP_ANIMATION_ID)
-            --animationManager:addTask(animationTask:new(playerLocation, newPlayerLocation, .08, playerAnimationOffset), PLAYER_ANIMATION_ID)
+        if bigMap.map[bigPlayerPos.x][bigPlayerPos.y] == cellType.PATH or bigMap.map[bigPlayerPos.x][bigPlayerPos.y] == cellType.ROPE_PATH then
+            -- animationManager:addTask(animationTask:new(centerLocation, newCenterLocation, .08, mapAnimationOffset), MAP_ANIMATION_ID)
+            -- animationManager:addTask(animationTask:new(playerLocation, newPlayerLocation, .08, playerAnimationOffset), PLAYER_ANIMATION_ID)
 
             centerLocation = newCenterLocation
             playerLocation = newPlayerLocation
+            rope:movedTo(bigPlayerPos)
             smallMap = getSmallMap(centerLocation, bigMap)
         end
     end

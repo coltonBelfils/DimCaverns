@@ -40,6 +40,9 @@ function LinkedList:addFirst(value)
     self.size = self.size + 1
 end
 
+LinkedList.push = LinkedList.addFirst
+LinkedList.enqueue = LinkedList.addFirst
+
 function LinkedList:addLast(value)
     local last = self.tail.prev
     self.tail.prev = {
@@ -80,6 +83,8 @@ function LinkedList:removeFirst()
     return value
 end
 
+LinkedList.pop = LinkedList.removeFirst
+
 function LinkedList:removeLast()
     assert(self.size > 0, "No Linked List items to remove")
     local value = self.tail.prev.value
@@ -90,7 +95,9 @@ function LinkedList:removeLast()
     return value
 end
 
-function LinkedList:emoveIndex(index)
+LinkedList.dequeue = LinkedList.removeLast
+
+function LinkedList:removeIndex(index)
     assert(type(index) == "number") -- this needs to turn into function decorators and the checks lib
     assert(index > 0 and index <= self.size, "Invalid Linked List index: " .. index)
     local cur = self.head -- check on-hand table before going through the for loop
@@ -129,6 +136,11 @@ function LinkedList:get(index)
         end
         return cur.value
     end
+end
+
+function LinkedList:peek(depth)
+    local index = (depth or 0) + 1
+    return self:get(index)
 end
 
 function LinkedList:printList()
