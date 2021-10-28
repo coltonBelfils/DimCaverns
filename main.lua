@@ -5,6 +5,8 @@ local animationManager = require("animationManager")
 local animationTask = require("animationTask")
 local animationOffset = require("animationOffset")
 local ropeItem = require("ropeItem")
+local gameState = require("model.gameState")
+local settings = require("model.settings")
 
 local black = {0, 0, 0}
 local white = {1, 1, 1}
@@ -13,10 +15,6 @@ local seed = os.time()
 seed = 456789
 math.randomseed(seed)
 
-local mapSize = 70
-local maxRoomSize = 7
-
-local bigMap
 local smallMap = {} -- a 2D array ints/cellTypes. 7 by 7 array, only 5 by 5 cells are shown at a time and then there's one buffer cell per side for animation.
 local centerLocation -- the pos of the center of the small map on the big map
 local playerLocation
@@ -37,17 +35,16 @@ function love.load()
     love.graphics.setBackgroundColor(black)
     love.graphics.setColor(white)
 
-    bigMap = mapper:new(mapSize, maxRoomSize)
-    rope = ropeItem:new(bigMap.map)
+    rope = ropeItem:new(gameState:get().bigMap)
     printMap()
 
-    if bigMap.map[2][2] == cellType.PATH then
+    if gameState:get().bigMap[2][2] == cellType.PATH then
         centerLocation = pos:new(2, 2)
         -- playerLocation = pos:new(2, 2)
-    elseif bigMap.map[3][2] == cellType.PATH then
+    elseif gameState:get().bigMap[3][2] == cellType.PATH then
         centerLocation = pos:new(3, 2)
         -- playerLocation = pos:new(3, 2)
-    elseif bigMap.map[2][3] == cellType.PATH then
+    elseif gameState:get().bigMap[2][3] == cellType.PATH then
         centerLocation = pos:new(2, 3)
         -- playerLocation = pos:new(2, 3)
     else
@@ -56,15 +53,16 @@ function love.load()
 
     playerLocation = pos:new(3, 3)
 
-    smallMap = getSmallMap(centerLocation, bigMap)
+    smallMap = getSmallMap(centerLocation, gameState:get().bigMap)
     -- rope:equip(smallToBigPos(playerLocation, centerLocation))
 end
 
 function printMap()
     local str = ""
-    for y = mapSize, 1, -1 do
-        for x = 1, mapSize, 1 do
-            str = str .. tostring(bigMap.map[x][y].print)
+    local size = settings:get().mapSize
+    for y = size, 1, -1 do
+        for x = 1, size, 1 do
+            str = str .. tostring(gameState:get().bigMap[x][y].print)
         end
         str = str .. "\n"
     end
@@ -88,7 +86,7 @@ function love.draw()
     love.graphics.setColor({1, 0, 0})
 
     -- local smallPlayerLocation = bigToSmallPos(playerLocation, centerLocation)
-    love.graphics.rectangle("fill", (((playerLocation.x - 1) * 48) + 80) + (playerAnimationOffset.x * 48), ((((playerLocation.y * -1) + 6) - 1) * 48) - (playerAnimationOffset.y * 48), 48, 48) -- The (y * -1) + 6) part is because the y axis needs to be inverted. The drawing canvas has (0,0) in the upper left, but the maps have it in the lower left.
+    love.graphics.rectangle("line", (((playerLocation.x - 1) * 48) + 80) + (playerAnimationOffset.x * 48), ((((playerLocation.y * -1) + 6) - 1) * 48) - (playerAnimationOffset.y * 48), 48, 48) -- The (y * -1) + 6) part is because the y axis needs to be inverted. The drawing canvas has (0,0) in the upper left, but the maps have it in the lower left.
 
     love.graphics.setColor({.5, .5, .5})
     love.graphics.rectangle("fill", 0, 0, 80, 240)
@@ -134,15 +132,15 @@ function love.keypressed(key, scancode, isrepeat) -- something's not right with 
         end
 
         local bigPlayerPos = smallToBigPos(newPlayerLocation, newCenterLocation)
-        if bigMap.map[bigPlayerPos.x][bigPlayerPos.y] == cellType.PATH or bigMap.map[bigPlayerPos.x][bigPlayerPos.y] == cellType.ROPE_PATH then
+        if (playerLocation ~= newPlayerLocation or centerLocation ~= newCenterLocation) and gameState:get().bigMap[bigPlayerPos.x][bigPlayerPos.y].canMoveTo then
             -- animationManager:addTask(animationTask:new(centerLocation, newCenterLocation, .08, mapAnimationOffset), MAP_ANIMATION_ID)
             -- animationManager:addTask(animationTask:new(playerLocation, newPlayerLocation, .08, playerAnimationOffset), PLAYER_ANIMATION_ID)
 
             centerLocation = newCenterLocation
             playerLocation = newPlayerLocation
             rope:movedTo(bigPlayerPos)
-            smallMap = getSmallMap(centerLocation, bigMap)
         end
+        smallMap = getSmallMap(centerLocation, gameState:get().bigMap)
     end
 end
 
@@ -152,8 +150,8 @@ function getSmallMap(center, bigMap)
         newSmallMap[xMod + 3] = {}
         for yMod = -3, 3, 1 do
             local newPos = pos:new(center.x + xMod, center.y + yMod)
-            if newPos.x > 0 and newPos.x <= mapSize and newPos.y > 0 and newPos.y <= mapSize then
-                newSmallMap[xMod + 3][yMod + 3] = bigMap.map[newPos.x][newPos.y]
+            if newPos.x > 0 and newPos.x <= settings:get().mapSize and newPos.y > 0 and newPos.y <= settings:get().mapSize then
+                newSmallMap[xMod + 3][yMod + 3] = bigMap[newPos.x][newPos.y]
             else
                 newSmallMap[xMod + 3][yMod + 3] = cellType.LEVEL_BOARDER
             end

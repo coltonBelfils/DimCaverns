@@ -7,8 +7,8 @@ local posLink = require("posLink")
 
 local Mapper = {}-- A glorified version of Kruskal's Algorithm the cells in the maze aren't all uniform squares.
 
-function Mapper:new(mapSize, maxRoomSize)
-    local map = {} -- a 2D array of trees. The tree values are cells.
+function Mapper:generate(mapSize, maxRoomSize)
+    local constructionMap = {} -- a 2D array of trees. The tree values are cells.
     local exportMap = {} -- a 2D array of cellTypes.
 
     local pointsAssigned = {}
@@ -17,19 +17,19 @@ function Mapper:new(mapSize, maxRoomSize)
     local bordersAlready = {} -- Hashtable that keeps track of which borders have already been added so you don't have to treverse the borders LL to find out
 
     for x = 1, mapSize, 1 do -- (0,0) is the bottom left
-        map[x] = {}
+        constructionMap[x] = {}
         exportMap[x] = {}
         for y = 1, mapSize, 1 do
             if x == 1 or x == mapSize or y == 1 or y == mapSize then
                 local newCell = cell:new(cellType.LEVEL_BOARDER, pos:new(x, y))
-                map[x][y] = tree:new(newCell)
+                constructionMap[x][y] = tree:new(newCell)
                 exportMap[x][y] = cellType.LEVEL_BOARDER
-                pointsAssigned[newCell.pos:id()] = map[x][y]
+                pointsAssigned[newCell.pos:id()] = constructionMap[x][y]
             else
                 local newCell = cell:new(cellType.PATH, pos:new(x, y))
-                map[x][y] = tree:new(newCell)
+                constructionMap[x][y] = tree:new(newCell)
                 exportMap[x][y] = cellType.PATH
-                points:addLast(map[x][y])
+                points:addLast(constructionMap[x][y])
             end
         end
     end
@@ -54,13 +54,13 @@ function Mapper:new(mapSize, maxRoomSize)
             while xPacked == false and xDist > 0 do -- expand in the x direction up to xDist if possible
                 if pointsAssigned[pos:new(rect.right + 1, rect.top):id()] == nil then
                     rect.right = rect.right + 1
-                    local newPoint = map[rect.right][rect.top]
+                    local newPoint = constructionMap[rect.right][rect.top]
                     pointsAssigned[newPoint:getValue().pos:id()] = newPoint
                     cellTree:graft(newPoint)
                     xDist = xDist - 1
                 elseif pointsAssigned[pos:new(rect.left - 1, rect.top):id()] == nil then
                     rect.left = rect.left - 1
-                    local newPoint = map[rect.left][rect.top]
+                    local newPoint = constructionMap[rect.left][rect.top]
                     pointsAssigned[newPoint:getValue().pos:id()] = newPoint
                     cellTree:graft(newPoint)
                     xDist = xDist - 1
@@ -78,7 +78,7 @@ function Mapper:new(mapSize, maxRoomSize)
                 if topCellsClear then
                     rect.top = rect.top + 1
                     for i = rect.left, rect.right, 1 do
-                        local newPoint = map[i][rect.top]
+                        local newPoint = constructionMap[i][rect.top]
                         pointsAssigned[newPoint:getValue().pos:id()] = newPoint
                         cellTree:graft(newPoint)
                     end
@@ -93,7 +93,7 @@ function Mapper:new(mapSize, maxRoomSize)
                     if bottomCellsClear then
                         rect.bottom = rect.bottom - 1
                         for i = rect.left, rect.right, 1 do
-                            local newPoint = map[i][rect.bottom]
+                            local newPoint = constructionMap[i][rect.bottom]
                             pointsAssigned[newPoint:getValue().pos:id()] = newPoint
                             cellTree:graft(newPoint)
                         end
@@ -107,67 +107,67 @@ function Mapper:new(mapSize, maxRoomSize)
             for x = rect.left, rect.right, 1 do
                 for y = rect.bottom, rect.top, 1 do
                     if x == rect.right then
-                        if map[rect.right + 1][y]:getValue().cellType == cellType.PATH then map[rect.right][y]:removeNode()
-                            local wallPoint = map[rect.right][y]:getValue()
+                        if constructionMap[rect.right + 1][y]:getValue().cellType == cellType.PATH then constructionMap[rect.right][y]:removeNode()
+                            local wallPoint = constructionMap[rect.right][y]:getValue()
                             wallPoint.cellType = cellType.WALL
                             exportMap[rect.right][y] = cellType.WALL
                             pointsAssigned[wallPoint.pos:id()] = wallPoint
-                            local newLink = posLink:new(map[rect.right - 1][y].value.pos, map[rect.right + 1][y].value.pos, map[rect.right][y].value.pos)
+                            local newLink = posLink:new(constructionMap[rect.right - 1][y].value.pos, constructionMap[rect.right + 1][y].value.pos, constructionMap[rect.right][y].value.pos)
                             if not bordersAlready[newLink:id()] then
                                 bordersAlready[newLink:id()] = true
                                 borders:addFirst(newLink)
                             end
-                        elseif map[rect.right + 1][y]:getValue().cellType ~= cellType.LEVEL_BOARDER and not bordersAlready[posLink:new(map[rect.right][y].value.pos, map[rect.right + 2][y].value.pos, map[rect.right + 1][y].value.pos):id()] then
-                            local newLink = posLink:new(map[rect.right][y].value.pos, map[rect.right + 2][y].value.pos, map[rect.right + 1][y].value.pos)
+                        elseif constructionMap[rect.right + 1][y]:getValue().cellType ~= cellType.LEVEL_BOARDER and not bordersAlready[posLink:new(constructionMap[rect.right][y].value.pos, constructionMap[rect.right + 2][y].value.pos, constructionMap[rect.right + 1][y].value.pos):id()] then
+                            local newLink = posLink:new(constructionMap[rect.right][y].value.pos, constructionMap[rect.right + 2][y].value.pos, constructionMap[rect.right + 1][y].value.pos)
                             bordersAlready[newLink:id()] = true
                             borders:addFirst(newLink)
                         end
                     elseif x == rect.left then
-                        if map[rect.left - 1][y]:getValue().cellType == cellType.PATH then map[rect.left][y]:removeNode()
-                            local wallPoint = map[rect.left][y]:getValue()
+                        if constructionMap[rect.left - 1][y]:getValue().cellType == cellType.PATH then constructionMap[rect.left][y]:removeNode()
+                            local wallPoint = constructionMap[rect.left][y]:getValue()
                             wallPoint.cellType = cellType.WALL
                             exportMap[rect.left][y] = cellType.WALL
                             pointsAssigned[wallPoint.pos:id()] = wallPoint
-                            local newLink = posLink:new(map[rect.left + 1][y].value.pos, map[rect.left - 1][y].value.pos, map[rect.left][y].value.pos)
+                            local newLink = posLink:new(constructionMap[rect.left + 1][y].value.pos, constructionMap[rect.left - 1][y].value.pos, constructionMap[rect.left][y].value.pos)
                             if not bordersAlready[newLink:id()] then
                                 bordersAlready[newLink:id()] = true
                                 borders:addFirst(newLink)
                             end
-                        elseif map[rect.left - 1][y]:getValue().cellType ~= cellType.LEVEL_BOARDER and not bordersAlready[posLink:new(map[rect.left][y].value.pos, map[rect.left - 2][y].value.pos, map[rect.left - 1][y].value.pos):id()] then
-                            local newLink = posLink:new(map[rect.left][y].value.pos, map[rect.left - 2][y].value.pos, map[rect.left - 1][y].value.pos)
+                        elseif constructionMap[rect.left - 1][y]:getValue().cellType ~= cellType.LEVEL_BOARDER and not bordersAlready[posLink:new(constructionMap[rect.left][y].value.pos, constructionMap[rect.left - 2][y].value.pos, constructionMap[rect.left - 1][y].value.pos):id()] then
+                            local newLink = posLink:new(constructionMap[rect.left][y].value.pos, constructionMap[rect.left - 2][y].value.pos, constructionMap[rect.left - 1][y].value.pos)
                             bordersAlready[newLink:id()] = true
                             borders:addFirst(newLink)
                         end
                     end
                     if y == rect.top then
-                        if map[x][rect.top + 1]:getValue().cellType == cellType.PATH then map[x][rect.top]:removeNode()
-                            local wallPoint = map[x][rect.top]:getValue()
+                        if constructionMap[x][rect.top + 1]:getValue().cellType == cellType.PATH then constructionMap[x][rect.top]:removeNode()
+                            local wallPoint = constructionMap[x][rect.top]:getValue()
                             wallPoint.cellType = cellType.WALL
                             exportMap[x][rect.top] = cellType.WALL
                             pointsAssigned[wallPoint.pos:id()] = wallPoint
-                            local newLink = posLink:new(map[x][rect.top - 1].value.pos, map[x][rect.top + 1].value.pos, map[x][rect.top].value.pos)
+                            local newLink = posLink:new(constructionMap[x][rect.top - 1].value.pos, constructionMap[x][rect.top + 1].value.pos, constructionMap[x][rect.top].value.pos)
                             if not bordersAlready[newLink:id()] then
                                 bordersAlready[newLink:id()] = true
                                 borders:addFirst(newLink)
                             end
-                        elseif map[x][rect.top + 1]:getValue().cellType ~= cellType.LEVEL_BOARDER and not bordersAlready[posLink:new(map[x][rect.top].value.pos, map[x][rect.top + 2].value.pos, map[x][rect.top + 1].value.pos):id()] then
-                            local newLink = posLink:new(map[x][rect.top].value.pos, map[x][rect.top + 2].value.pos, map[x][rect.top + 1].value.pos)
+                        elseif constructionMap[x][rect.top + 1]:getValue().cellType ~= cellType.LEVEL_BOARDER and not bordersAlready[posLink:new(constructionMap[x][rect.top].value.pos, constructionMap[x][rect.top + 2].value.pos, constructionMap[x][rect.top + 1].value.pos):id()] then
+                            local newLink = posLink:new(constructionMap[x][rect.top].value.pos, constructionMap[x][rect.top + 2].value.pos, constructionMap[x][rect.top + 1].value.pos)
                             bordersAlready[newLink:id()] = true
                             borders:addFirst(newLink)
                         end
                     elseif y == rect.bottom then
-                        if map[x][rect.bottom - 1]:getValue().cellType == cellType.PATH then map[x][rect.bottom]:removeNode()
-                            local wallPoint = map[x][rect.bottom]:getValue()
+                        if constructionMap[x][rect.bottom - 1]:getValue().cellType == cellType.PATH then constructionMap[x][rect.bottom]:removeNode()
+                            local wallPoint = constructionMap[x][rect.bottom]:getValue()
                             wallPoint.cellType = cellType.WALL
                             exportMap[x][rect.bottom] = cellType.WALL
                             pointsAssigned[wallPoint.pos:id()] = wallPoint
-                            local newLink = posLink:new(map[x][rect.bottom + 1].value.pos, map[x][rect.bottom - 1].value.pos, map[x][rect.bottom].value.pos)
+                            local newLink = posLink:new(constructionMap[x][rect.bottom + 1].value.pos, constructionMap[x][rect.bottom - 1].value.pos, constructionMap[x][rect.bottom].value.pos)
                             if not bordersAlready[newLink:id()] then
                                 bordersAlready[newLink:id()] = true
                                 borders:addFirst(newLink)
                             end
-                        elseif map[x][rect.bottom - 1]:getValue().cellType ~= cellType.LEVEL_BOARDER and not bordersAlready[posLink:new(map[x][rect.bottom].value.pos, map[x][rect.bottom - 2].value.pos, map[x][rect.bottom - 1].value.pos):id()] then
-                            local newLink = posLink:new(map[x][rect.bottom].value.pos, map[x][rect.bottom - 2].value.pos, map[x][rect.bottom - 1].value.pos)
+                        elseif constructionMap[x][rect.bottom - 1]:getValue().cellType ~= cellType.LEVEL_BOARDER and not bordersAlready[posLink:new(constructionMap[x][rect.bottom].value.pos, constructionMap[x][rect.bottom - 2].value.pos, constructionMap[x][rect.bottom - 1].value.pos):id()] then
+                            local newLink = posLink:new(constructionMap[x][rect.bottom].value.pos, constructionMap[x][rect.bottom - 2].value.pos, constructionMap[x][rect.bottom - 1].value.pos)
                             bordersAlready[newLink:id()] = true
                             borders:addFirst(newLink)
                         end
@@ -181,22 +181,20 @@ function Mapper:new(mapSize, maxRoomSize)
     while borders:getSize() > 0 do
         local index = math.random(borders:getSize())
         local borderLink = borders:removeIndex(index)
-        local borderOne = map[borderLink.posOne.x][borderLink.posOne.y]
-        local borderTwo = map[borderLink.posTwo.x][borderLink.posTwo.y]
+        local borderOne = constructionMap[borderLink.posOne.x][borderLink.posOne.y]
+        local borderTwo = constructionMap[borderLink.posTwo.x][borderLink.posTwo.y]
         if borderOne.value.cellType == cellType.PATH and borderTwo.value.cellType == cellType.PATH and borderOne:getTopParent() ~= borderTwo:getTopParent() then
-            map[borderLink.linkPos.x][borderLink.linkPos.y].value.cellType = cellType.PATH
+            constructionMap[borderLink.linkPos.x][borderLink.linkPos.y].value.cellType = cellType.PATH
             exportMap[borderLink.linkPos.x][borderLink.linkPos.y] = cellType.PATH
             borderOne:graft(borderTwo)
         end
     end
 
-    local nMapper = {
-        map = exportMap
+    local mapReturn = {
+        
     }
 
-    setmetatable(nMapper, self)
-
-    return nMapper
+    return exportMap
 end
 
 Mapper.__index = Mapper
