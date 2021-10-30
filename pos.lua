@@ -1,46 +1,46 @@
 local Pos = {}
-local PosPrototype = {}
+local PosProto = {}
 
 function Pos:new(x, y)
-    local private = {
-        x = x,
-        y = y
-    }
+    -- Private
+    local x = x
+    local y = y
 
-    local public = {}
+    -- Public
+    local nPos = {}
 
-    function public:getX()
-        return private.x
+    function nPos:getX()
+        return x
     end
 
-    function public:setX(value)
-        private.x = value
+    function nPos:setX(value)
+        x = value
     end
 
-    function public:getY()
-        return private.y
+    function nPos:getY()
+        return y
     end
 
-    function public:setY(value)
-        private.y = value
+    function nPos:setY(value)
+        y = value
     end
 
-    setmetatable(public, PosPrototype)
+    setmetatable(nPos, PosProto)
 
-    return public
+    return nPos
 end
 
-PosPrototype.__index = PosPrototype
+PosProto.__index = PosProto
 
-function PosPrototype:id()
+function PosProto:id()
     return "" .. self:getX() .. "-" .. self:getY()
 end
 
-function PosPrototype:__tostring()
+function PosProto:__tostring()
     return "(" .. self:getX() .. "," .. self:getY() .. ")"
 end
 
-function PosPrototype.__eq(p1, p2)
+function PosProto.__eq(p1, p2)
     return p1:getX() == p2:getX() and p1:getY() == p2:getY()
 end
 

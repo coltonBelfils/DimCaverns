@@ -1,36 +1,54 @@
 local PosLink = {}
+local PosLinkProto = {}
 
 function PosLink:new(pos, otherPos, linkPos)
+    assert(pos and otherPos and linkPos, "PosLink:new(), paramiters must be not nil")
+
+    -- Private
+    local posOne
+    local posTwo
+    if pos:getX() > otherPos:getX() then
+        assert(pos:getX() - 2 == otherPos:getX() and pos:getX() - 1 == linkPos:getX(), "Invalid Link")
+        posOne = pos
+        posTwo = otherPos
+    elseif pos:getX() == otherPos:getX() and pos:getY() > otherPos:getY() then
+        assert(pos:getY() - 2 == otherPos:getY() and pos:getY() - 1 == linkPos:getY(), "Invalid Link")
+        posOne = pos
+        posTwo = otherPos
+    else
+        assert((pos:getX() + 2 == otherPos:getX() and pos:getX() + 1 == linkPos:getX()) or (pos:getY() + 2 == otherPos:getY() and pos:getY() + 1 == linkPos:getY()), "Invalid Link")
+        posOne = otherPos
+        posTwo = pos
+    end
+    local linkPos = linkPos
+
+    -- Public
     local nLink = {}
 
-    if pos.x > otherPos.x then
-        assert(pos.x - 2 == otherPos.x and pos.x - 1 == linkPos.x, "Invalid Link")
-        nLink.posOne = pos
-        nLink.posTwo = otherPos
-    elseif pos.x == otherPos.x and pos.y > otherPos.y then
-        assert(pos.y - 2 == otherPos.y and pos.y- 1 == linkPos.y, "Invalid Link")
-        nLink.posOne = pos
-        nLink.posTwo = otherPos
-    else
-        assert((pos.x + 2 == otherPos.x and pos.x + 1 == linkPos.x) or (pos.y + 2 == otherPos.y and pos.y + 1 == linkPos.y), "Invalid Link")
-        nLink.posOne = otherPos
-        nLink.posTwo = pos
+    function nLink:getPosOne()
+        return posOne
     end
 
-    nLink.linkPos = linkPos
+    function nLink:getPosTwo()
+        return posTwo
+    end
 
-    setmetatable(nLink, self)
+    function nLink:getLinkPos()
+        return linkPos
+    end
+
+    setmetatable(nLink, PosLinkProto)
 
     return nLink
 end
 
-PosLink.__index = PosLink
-function PosLink:__tostring()
-    return ">" .. tostring(self.posOne) .. "-" .. tostring(self.linkPos) .. "-" .. tostring(self.posTwo) .. "<"
+PosLinkProto.__index = PosLinkProto
+function PosLinkProto:__tostring()
+    return ">" .. tostring(self:getPosOne()) .. "-" .. tostring(self:getLinkPos()) .. "-" .. tostring(self:getPosOne()) .. "<"
 end
 
-function PosLink:id()
-    return "1:" .. self.posOne.x .. self.posOne.y .. "-link:" .. self.linkPos.x .. self.linkPos.y .. "-2:" .. self.posTwo.x .. self.posTwo.y
+function PosLinkProto:id()
+    return "1:" .. self:getPosOne():getX() .. self:getPosOne():getY() .. "-link:" .. self:getLinkPos():getX() .. self:getLinkPos():getY() .. "-2:" .. self:getPosTwo():getX() .. self:getPosTwo():getY()
 end
 
 return PosLink

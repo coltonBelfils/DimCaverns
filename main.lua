@@ -1,5 +1,5 @@
 local cellType = require("cellType")
-local mapper = require("mapper")
+local mapGen = require("mapGen")
 local pos = require("pos")
 local animationManager = require("animationManager")
 local animationTask = require("animationTask")
@@ -35,16 +35,16 @@ function love.load()
     love.graphics.setBackgroundColor(black)
     love.graphics.setColor(white)
 
-    rope = ropeItem:new(gameState:get().bigMap)
+    rope = ropeItem:new(gameState().bigMap)
     printMap()
 
-    if gameState:get().bigMap[2][2] == cellType.PATH then
+    if gameState().bigMap[2][2] == cellType.PATH then
         centerLocation = pos:new(2, 2)
         -- playerLocation = pos:new(2, 2)
-    elseif gameState:get().bigMap[3][2] == cellType.PATH then
+    elseif gameState().bigMap[3][2] == cellType.PATH then
         centerLocation = pos:new(3, 2)
         -- playerLocation = pos:new(3, 2)
-    elseif gameState:get().bigMap[2][3] == cellType.PATH then
+    elseif gameState().bigMap[2][3] == cellType.PATH then
         centerLocation = pos:new(2, 3)
         -- playerLocation = pos:new(2, 3)
     else
@@ -53,16 +53,16 @@ function love.load()
 
     playerLocation = pos:new(3, 3)
 
-    smallMap = getSmallMap(centerLocation, gameState:get().bigMap)
+    smallMap = getSmallMap(centerLocation, gameState().bigMap)
     -- rope:equip(smallToBigPos(playerLocation, centerLocation))
 end
 
 function printMap()
     local str = ""
-    local size = settings:get().mapSize
+    local size = settings().mapSize
     for y = size, 1, -1 do
         for x = 1, size, 1 do
-            str = str .. tostring(gameState:get().bigMap[x][y].print)
+            str = str .. tostring(gameState().bigMap[x][y].print)
         end
         str = str .. "\n"
     end
@@ -140,30 +140,14 @@ function love.keypressed(key, scancode, isrepeat) -- something's not right with 
             playerLocation = newPlayerLocation
             rope:movedTo(bigPlayerPos)
         end
-        smallMap = getSmallMap(centerLocation, gameState:get().bigMap)
+        smallMap = gameState():getSmallMap()
     end
-end
-
-function getSmallMap(center, bigMap)
-    local newSmallMap = {}
-    for xMod = -3, 3, 1 do
-        newSmallMap[xMod + 3] = {}
-        for yMod = -3, 3, 1 do
-            local newPos = pos:new(center.x + xMod, center.y + yMod)
-            if newPos.x > 0 and newPos.x <= settings:get().mapSize and newPos.y > 0 and newPos.y <= settings:get().mapSize then
-                newSmallMap[xMod + 3][yMod + 3] = bigMap[newPos.x][newPos.y]
-            else
-                newSmallMap[xMod + 3][yMod + 3] = cellType.LEVEL_BOARDER
-            end
-        end
-    end
-    return newSmallMap
 end
 
 function smallToBigPos(smallPos, bigPosAnchor)
-    return pos:new(bigPosAnchor.x + (smallPos.x - 3), bigPosAnchor.y + (smallPos.y - 3))
+    return pos:new(bigPosAnchor:getX() + (smallPos:getX() - 3), bigPosAnchor:getY() + (smallPos:getY() - 3))
 end
 
 function bigToSmallPos(bigPos, bigPosAnchor)
-    return pos:new(bigPos.x - bigPosAnchor.x + 3, bigPos.y - bigPosAnchor.y + 3)
+    return pos:new(bigPos:getX() - bigPosAnchor:getX() + 3, bigPos:getY() - bigPosAnchor:getY() + 3)
 end

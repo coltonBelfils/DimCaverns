@@ -1,9 +1,15 @@
 local time = os.time()
 
-local defaultSettings = {
-    mapSize = 70,
-    maxRoomSize = 7,
-    seed = time,
-}
+local mapSize = 70
+local maxRoomSize = 7
+local seed = time
 
-return defaultSettings
+local function getDefaultSettings()
+    return {
+        mapSize = mapSize,
+        maxRoomSize = maxRoomSize,
+        seed = seed
+    }
+end
+
+return getDefaultSettings

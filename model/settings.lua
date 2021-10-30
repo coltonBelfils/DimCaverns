@@ -1,16 +1,19 @@
-local defaultSettings = require("model.defaultSettings")
+local gds = require("model.defaultSettings")
 
-local Settings = {
-    instance = nil -- Find a way to make private.
-}
+local instance = nil
 
-function Settings:get()
-    if self.instance then return self.instance end
+local function getSettings()
+    if instance then
+        return instance
+    end
 
     -- Check for save file
-    self.instance = defaultSettings
 
-    return self.instance
+    instance = gds()
+
+    return instance
 end
 
-return Settings
+getSettings()
+
+return getSettings
