@@ -5,22 +5,22 @@ local CellProto = {}
 
 function Cell:new(cellType, pos)
     -- Private
-    local cellType = cellType -- TODO Cell and CellType need to be merged
-    local pos = pos
+    local _cellType = cellType -- TODO Cell and CellType need to be merged
+    local _pos = pos
 
     -- Public
     local nCell = {}
 
     function nCell:getCellType()
-        return cellType
+        return _cellType
     end
 
     function nCell:setCellType(cellType)
-        cellType = cellType
+        _cellType = cellType
     end
 
     function nCell:getPos()
-        return pos
+        return _pos
     end
 
     setmetatable(nCell, CellProto)

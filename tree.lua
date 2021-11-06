@@ -5,64 +5,66 @@ local TreeProto = {}
 
 function Tree:new(value)
     -- Private
-    local value = value
-    local children = linkedList:new()
-    local childArray = {}
-    local childArrayChanged = false
-    local parent = nil
+    local _value = value
+    local _children = linkedList:new()
+    local _childArray = {}
+    local _childArrayChanged = false
+    local _parent = nil
 
     -- Public
     local nTree = {}
 
     function nTree:getValue()
-        return value
+        return _value
     end
 
     function nTree:setValue(value)
-        value = value
+        _value = value
     end
 
     function nTree:getParent()
-        return parent
+        return _parent
     end
 
     function nTree:getChildren()
-        if not childArrayChanged then return childArray end
-        childArray = {}
-        for i = 1, children:getSize(), 1 do
-            table.insert(childArray, children:get(i))
+        if not _childArrayChanged then
+            return _childArray
         end
-        return childArray
+        _childArray = {}
+        for i = 1, _children:getSize(), 1 do
+            table.insert(_childArray, _children:get(i))
+        end
+        return _childArray
     end
 
     function nTree:graft(childTree)
         local newChild = childTree:getTopParent()
         newChild.parent = self
-        children:addLast(newChild)
+        _children:addLast(newChild)
     end
 
     function TreeProto:removeBranch()
-        assert(parent ~= nil, "tree.removeBranch(): Tree does not have a parent to detach from.")
-        for i = 1, parent.children:getSize(), 1 do
-            if parent.children:get(i) == self then
-                parent.children:removeIndex(i)
+        assert(_parent ~= nil, "tree.removeBranch(): Tree does not have a parent to detach from.")
+        for i = 1, _parent.children:getSize(), 1 do
+            if _parent.children:get(i) == self then
+                _parent.children:removeIndex(i)
                 break
             end
         end
-        parent = nil
+        _parent = nil
     end
 
     function TreeProto:removeNode()
-        if parent ~= nil then
-            while children:getSize() > 0 do
-                local move = children:removeFirst()
-                move.parent = parent
-                parent.children:addLast(move)
+        if _parent ~= nil then
+            while _children:getSize() > 0 do
+                local move = _children:removeFirst()
+                move.parent = _parent
+                _parent.children:addLast(move)
             end
-        elseif children:getSize() > 0 then
-            local newParent = children:removeFirst()
-            while children:getSize() > 0 do
-                local move = children:removeFirst()
+        elseif _children:getSize() > 0 then
+            local newParent = _children:removeFirst()
+            while _children:getSize() > 0 do
+                local move = _children:removeFirst()
                 move.parent = newParent
                 newParent.children:addLast(move)
             end

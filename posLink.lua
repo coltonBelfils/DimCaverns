@@ -20,7 +20,7 @@ function PosLink:new(pos, otherPos, linkPos)
         posOne = otherPos
         posTwo = pos
     end
-    local linkPos = linkPos
+    local _linkPos = linkPos
 
     -- Public
     local nLink = {}
@@ -34,7 +34,7 @@ function PosLink:new(pos, otherPos, linkPos)
     end
 
     function nLink:getLinkPos()
-        return linkPos
+        return _linkPos
     end
 
     setmetatable(nLink, PosLinkProto)
@@ -44,7 +44,7 @@ end
 
 PosLinkProto.__index = PosLinkProto
 function PosLinkProto:__tostring()
-    return ">" .. tostring(self:getPosOne()) .. "-" .. tostring(self:getLinkPos()) .. "-" .. tostring(self:getPosOne()) .. "<"
+    return ">" .. tostring(self:getPosOne()) .. "-" .. tostring(self:getLinkPos()) .. "-" .. tostring(self:getPosTwo()) .. "<"
 end
 
 function PosLinkProto:id()

@@ -38,13 +38,13 @@ function love.load()
     rope = ropeItem:new(gameState().bigMap)
     printMap()
 
-    if gameState().bigMap[2][2] == cellType.PATH then
+    if gameState():getBigMap()[2][2] == cellType.PATH then
         centerLocation = pos:new(2, 2)
         -- playerLocation = pos:new(2, 2)
-    elseif gameState().bigMap[3][2] == cellType.PATH then
+    elseif gameState():getBigMap()[3][2] == cellType.PATH then
         centerLocation = pos:new(3, 2)
         -- playerLocation = pos:new(3, 2)
-    elseif gameState().bigMap[2][3] == cellType.PATH then
+    elseif gameState():getBigMap()[2][3] == cellType.PATH then
         centerLocation = pos:new(2, 3)
         -- playerLocation = pos:new(2, 3)
     else
@@ -53,7 +53,7 @@ function love.load()
 
     playerLocation = pos:new(3, 3)
 
-    smallMap = getSmallMap(centerLocation, gameState().bigMap)
+    smallMap = gameState():getSmallMap()
     -- rope:equip(smallToBigPos(playerLocation, centerLocation))
 end
 
@@ -62,7 +62,7 @@ function printMap()
     local size = settings().mapSize
     for y = size, 1, -1 do
         for x = 1, size, 1 do
-            str = str .. tostring(gameState().bigMap[x][y].print)
+            str = str .. tostring(gameState():getBigMap()[x][y].print)
         end
         str = str .. "\n"
     end
@@ -86,7 +86,7 @@ function love.draw()
     love.graphics.setColor({1, 0, 0})
 
     -- local smallPlayerLocation = bigToSmallPos(playerLocation, centerLocation)
-    love.graphics.rectangle("line", (((playerLocation.x - 1) * 48) + 80) + (playerAnimationOffset.x * 48), ((((playerLocation.y * -1) + 6) - 1) * 48) - (playerAnimationOffset.y * 48), 48, 48) -- The (y * -1) + 6) part is because the y axis needs to be inverted. The drawing canvas has (0,0) in the upper left, but the maps have it in the lower left.
+    love.graphics.rectangle("line", (((gameState():getPlayerPos():getX() - 1) * 48) + 80) + (playerAnimationOffset.x * 48), ((((gameState():getPlayerPos():getY() * -1) + 6) - 1) * 48) - (playerAnimationOffset.y * 48), 48, 48) -- The (y * -1) + 6) part is because the y axis needs to be inverted. The drawing canvas has (0,0) in the upper left, but the maps have it in the lower left.
 
     love.graphics.setColor({.5, .5, .5})
     love.graphics.rectangle("fill", 0, 0, 80, 240)
@@ -99,28 +99,28 @@ function love.keypressed(key, scancode, isrepeat) -- something's not right with 
         -- local smallPlayerLocation = bigToSmallPos(playerLocation, centerLocation)
         local newCenterLocation = centerLocation
         if key == 'w' then
-            newPlayerLocation = pos:new(playerLocation.x, playerLocation.y + 1)
-            if newPlayerLocation.y > 4 then
-                newCenterLocation = pos:new(centerLocation.x, centerLocation.y + 1)
-                newPlayerLocation = pos:new(playerLocation.x, 4)
+            newPlayerLocation = pos:new(playerLocation:getX(), playerLocation:getY() + 1)
+            if newPlayerLocation:getY() > 4 then
+                newCenterLocation = pos:new(centerLocation:getX(), centerLocation:getY() + 1)
+                newPlayerLocation = pos:new(playerLocation:getX(), 4)
             end
         elseif key == 'd' then
-            newPlayerLocation = pos:new(playerLocation.x + 1, playerLocation.y)
-            if newPlayerLocation.x > 4 then
-                newCenterLocation = pos:new(centerLocation.x + 1, centerLocation.y)
-                newPlayerLocation = pos:new(4, newPlayerLocation.y)
+            newPlayerLocation = pos:new(playerLocation:getX() + 1, playerLocation:getY())
+            if newPlayerLocation:getX() > 4 then
+                newCenterLocation = pos:new(centerLocation:getX() + 1, centerLocation:getY())
+                newPlayerLocation = pos:new(4, newPlayerLocation:getY())
             end
         elseif key == 's' then
-            newPlayerLocation = pos:new(playerLocation.x, playerLocation.y - 1)
-            if newPlayerLocation.y < 2 then
-                newCenterLocation = pos:new(centerLocation.x, centerLocation.y - 1)
-                newPlayerLocation = pos:new(playerLocation.x, 2)
+            newPlayerLocation = pos:new(playerLocation:getX(), playerLocation:getY() - 1)
+            if newPlayerLocation:getY() < 2 then
+                newCenterLocation = pos:new(centerLocation:getX(), centerLocation:getY() - 1)
+                newPlayerLocation = pos:new(playerLocation:getX(), 2)
             end
         elseif key == 'a' then
-            newPlayerLocation = pos:new(playerLocation.x - 1, playerLocation.y)
-            if newPlayerLocation.x < 2 then
-                newCenterLocation = pos:new(centerLocation.x - 1, centerLocation.y)
-                newPlayerLocation = pos:new(2, newPlayerLocation.y)
+            newPlayerLocation = pos:new(playerLocation:getX() - 1, playerLocation:getY())
+            if newPlayerLocation:getX() < 2 then
+                newCenterLocation = pos:new(centerLocation:getX() - 1, centerLocation:getY())
+                newPlayerLocation = pos:new(2, newPlayerLocation:getY())
             end
         elseif key == 'e' then
             local bigPlayerPos = smallToBigPos(playerLocation, centerLocation)
@@ -132,7 +132,7 @@ function love.keypressed(key, scancode, isrepeat) -- something's not right with 
         end
 
         local bigPlayerPos = smallToBigPos(newPlayerLocation, newCenterLocation)
-        if (playerLocation ~= newPlayerLocation or centerLocation ~= newCenterLocation) and gameState:get().bigMap[bigPlayerPos.x][bigPlayerPos.y].canMoveTo then
+        if (playerLocation ~= newPlayerLocation or centerLocation ~= newCenterLocation) and gameState():getBigMap()[bigPlayerPos:getX()][bigPlayerPos:getY()].canMoveTo then
             -- animationManager:addTask(animationTask:new(centerLocation, newCenterLocation, .08, mapAnimationOffset), MAP_ANIMATION_ID)
             -- animationManager:addTask(animationTask:new(playerLocation, newPlayerLocation, .08, playerAnimationOffset), PLAYER_ANIMATION_ID)
 

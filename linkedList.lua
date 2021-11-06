@@ -124,13 +124,10 @@ function LinkedList:new()
         end
     end
 
-    function LinkedListProto:printList()
-        local cur = head
-        for i = 1, size, 1 do
-            cur = cur.next
-            print(tostring(cur.value))
-        end
-    end
+    nLL.push = nLL.addFirst
+    nLL.enqueue = nLL.addFirst
+    nLL.pop = nLL.removeFirst
+    nLL.dequeue = nLL.removeLast
 
     setmetatable(nLL, LinkedListProto)
 
@@ -142,10 +139,11 @@ function LinkedListProto:__tostring()
     return "toString not currently supported"
 end
 
-LinkedListProto.push = LinkedListProto.addFirst
-LinkedListProto.enqueue = LinkedListProto.addFirst
-LinkedListProto.pop = LinkedListProto.removeFirst
-LinkedListProto.dequeue = LinkedListProto.removeLast
+function LinkedListProto:printList()
+    for i = 1, self:getSize(), 1 do
+        print(tostring(self:get(i)))
+    end
+end
 
 function LinkedListProto:peek(depth)
     local index = (depth or 0) + 1
