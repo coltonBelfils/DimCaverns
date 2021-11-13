@@ -1,6 +1,4 @@
---local cellType = require("CellType")
-
-local Cell = {}
+--[[local Cell = {}
 local CellProto = {}
 
 function Cell:new(cellType, pos)
@@ -33,4 +31,22 @@ function CellProto:__tostring()
     return tostring(self:getPos() .. " - " .. self:getCellType())
 end
 
-return Cell
+return Cell]] 
+
+local Cell = {}
+
+setmetatable(Cell, {
+    __call = function(self, cellType, point2D)
+        local nCell = {
+            cellType = cellType,
+            point = point2D,
+        }
+
+        setmetatable(nCell, {
+            __tostring = function(self)
+                return tostring(tostring(self.point) .. " - " .. self.cellType)
+            end,
+            __metatable = "Cell",
+        })
+    end,
+})

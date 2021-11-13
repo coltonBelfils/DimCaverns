@@ -1,19 +1,19 @@
-local cell = require("cell")
-local cellType = require("cellType")
-local pos = require("pos")
-local tree = require("tree")
-local linkedList = require("linkedList")
-local posLink = require("posLink")
+local Cell = require("cell")
+local CellType = require("cellType")
+local P2d = require("pos")
+local Tree = require("tree")
+local LL = require("linkedList")
+local P2dL = require("posLink")
 
-local Mapper = {}-- A glorified version of Kruskal's Algorithm the cells in the maze aren't all uniform squares.
+local Mapper = {} -- A glorified version of Kruskal's Algorithm the cells in the maze aren't all uniform squares.
 
-function Mapper:generate(mapSize, maxRoomSize)
+function Mapper.generate(mapSize, maxRoomSize)
     local constructionMap = {} -- a 2D array of trees. The tree values are cells.
     local exportMap = {} -- a 2D array of cellTypes.
 
     local pointsAssigned = {}
-    local points = linkedList:new() -- a LL of all points that is flattened instead of in a 2D map
-    local borders = linkedList:new() -- LL which contains the border cells of all possible borders
+    local points = LL() -- a LL of all points that is flattened instead of in a 2D map
+    local borders = LL() -- LL which contains the border cells of all p2dsible borders
     local bordersAlready = {} -- Hashtable that keeps track of which borders have already been added so you don't have to treverse the borders LL to find out
 
     for x = 1, mapSize, 1 do -- (0,0) is the bottom left
@@ -21,57 +21,57 @@ function Mapper:generate(mapSize, maxRoomSize)
         exportMap[x] = {}
         for y = 1, mapSize, 1 do
             if x == 1 or x == mapSize or y == 1 or y == mapSize then
-                local newCell = cell:new(cellType.LEVEL_BOARDER, pos:new(x, y))
-                constructionMap[x][y] = tree:new(newCell)
-                exportMap[x][y] = cellType.LEVEL_BOARDER
-                pointsAssigned[newCell:getPos():id()] = constructionMap[x][y]
+                local newCell = Cell(CellType.LEVEL_BOARDER, P2d(x, y))
+                constructionMap[x][y] = Tree(newCell)
+                exportMap[x][y] = CellType.LEVEL_BOARDER
+                pointsAssigned[P2d.id(newCell.point)] = constructionMap[x][y]
             else
-                local newCell = cell:new(cellType.PATH, pos:new(x, y))
-                constructionMap[x][y] = tree:new(newCell)
-                exportMap[x][y] = cellType.PATH
-                points:addLast(constructionMap[x][y])
+                local newCell = Cell(CellType.PATH, P2d(x, y))
+                constructionMap[x][y] = Tree(newCell)
+                exportMap[x][y] = CellType.PATH
+                LL.addLast(points, constructionMap[x][y])
             end
         end
     end
-    
+
     -- This while loop is what creates all the rooms. 
-    while points:getSize() > 0 do -- This while loop could probably be optimized a little (a lot).
-        local index = math.random(points:getSize())
-        local cellTree = points:removeIndex(index) -- get the starting point for the room
-        local cellPoint = cellTree:getValue()
-        if pointsAssigned[cellPoint:getPos():id()] == nil then -- check if that point is available
-            pointsAssigned[cellPoint:getPos():id()] = cellPoint -- make that point unavailable for the future
+    while #points > 0 do -- This while loop could probably be optimized a little (a lot).
+        local index = math.random(#points)
+        local cellTree = LL.removeIndex(points, index) -- get the starting point for the room
+        local cellPoint = cellTree.value
+        if pointsAssigned[P2d.id(cellPoint.point)] == nil then -- check if that point is available
+            pointsAssigned[P2d.id(cellPoint.point)] = cellPoint -- make that point unavailable for the future
             local xDist = math.random(3, maxRoomSize)
             local yDist = math.random(3, maxRoomSize)
             local rect = {
-                top = cellPoint:getPos():getY(),
-                bottom = cellPoint:getPos():getY(),
-                left = cellPoint:getPos():getX(),
-                right = cellPoint:getPos():getX(),
+                top = cellPoint.point.y,
+                bottom = cellPoint.point.y,
+                left = cellPoint.point.x,
+                right = cellPoint.point.x,
             }
             local xPacked = false
             local yPacked = false
-            while xPacked == false and xDist > 0 do -- expand in the x direction up to xDist if possible
-                if pointsAssigned[pos:new(rect.right + 1, rect.top):id()] == nil then
+            while xPacked == false and xDist > 0 do -- expand in the x direction up to xDist if posible
+                if pointsAssigned[P2d.id(P2d(rect.right + 1, rect.top))] == nil then
                     rect.right = rect.right + 1
                     local newPoint = constructionMap[rect.right][rect.top]
-                    pointsAssigned[newPoint:getValue():getPos():id()] = newPoint
-                    cellTree:graft(newPoint)
+                    pointsAssigned[P2d.id(newPoint.value.point)] = newPoint
+                    Tree.graft(cellTree, newPoint)
                     xDist = xDist - 1
-                elseif pointsAssigned[pos:new(rect.left - 1, rect.top):id()] == nil then
+                elseif pointsAssigned[P2d.id(P2d(rect.left - 1, rect.top))] == nil then
                     rect.left = rect.left - 1
                     local newPoint = constructionMap[rect.left][rect.top]
-                    pointsAssigned[newPoint:getValue():getPos():id()] = newPoint
-                    cellTree:graft(newPoint)
+                    pointsAssigned[P2d.id(newPoint.value.point)] = newPoint
+                    Tree.graft(cellTree, newPoint)
                     xDist = xDist - 1
                 else
                     xPacked = true
                 end
             end
-            while yPacked == false and yDist > 0 do -- expand in the y direction up to ydist if possible
+            while yPacked == false and yDist > 0 do -- expand in the y direction up to ydist if posible
                 local topCellsClear = true
                 for i = rect.left, rect.right, 1 do
-                    if pointsAssigned[pos:new(i, rect.top + 1):id()] ~= nil then
+                    if pointsAssigned[P2d.id(P2d(i, rect.top + 1))] ~= nil then
                         topCellsClear = false
                     end
                 end
@@ -79,14 +79,14 @@ function Mapper:generate(mapSize, maxRoomSize)
                     rect.top = rect.top + 1
                     for i = rect.left, rect.right, 1 do
                         local newPoint = constructionMap[i][rect.top]
-                        pointsAssigned[newPoint:getValue():getPos():id()] = newPoint
-                        cellTree:graft(newPoint)
+                        pointsAssigned[P2d.id(newPoint.value.point)] = newPoint
+                        Tree.graft(cellTree, newPoint)
                     end
                     yDist = yDist - 1
                 else
                     local bottomCellsClear = true
                     for i = rect.left, rect.right, 1 do
-                        if pointsAssigned[pos:new(i, rect.bottom - 1):id()] ~= nil then
+                        if pointsAssigned[P2d.id(P2d(i, rect.bottom - 1))] ~= nil then
                             bottomCellsClear = false
                         end
                     end
@@ -94,8 +94,8 @@ function Mapper:generate(mapSize, maxRoomSize)
                         rect.bottom = rect.bottom - 1
                         for i = rect.left, rect.right, 1 do
                             local newPoint = constructionMap[i][rect.bottom]
-                            pointsAssigned[newPoint:getValue():getPos():id()] = newPoint
-                            cellTree:graft(newPoint)
+                            pointsAssigned[P2d.id(newPoint.value.point)] = newPoint
+                            Tree.graft(cellTree, newPoint)
                         end
                         yDist = yDist - 1
                     else
@@ -107,69 +107,73 @@ function Mapper:generate(mapSize, maxRoomSize)
             for x = rect.left, rect.right, 1 do
                 for y = rect.bottom, rect.top, 1 do
                     if x == rect.right then
-                        if constructionMap[rect.right + 1][y]:getValue():getCellType() == cellType.PATH then constructionMap[rect.right][y]:removeNode()
-                            local wallPoint = constructionMap[rect.right][y]:getValue()
-                            wallPoint:setCellType(cellType.WALL)
-                            exportMap[rect.right][y] = cellType.WALL
-                            pointsAssigned[wallPoint:getPos():id()] = wallPoint
-                            local newLink = posLink:new(constructionMap[rect.right - 1][y]:getValue():getPos(), constructionMap[rect.right + 1][y]:getValue():getPos(), constructionMap[rect.right][y]:getValue():getPos())
-                            if not bordersAlready[newLink:id()] then
-                                bordersAlready[newLink:id()] = true
-                                borders:addFirst(newLink)
+                        if constructionMap[rect.right + 1][y].value.cellType == CellType.PATH then
+                            Tree.removeNode(constructionMap[rect.right][y])
+                            local wallPoint = constructionMap[rect.right][y].value
+                            wallPoint.cellType = CellType.WALL
+                            exportMap[rect.right][y] = CellType.WALL
+                            pointsAssigned[P2d.id(wallPoint.point)] = wallPoint
+                            local newLink = P2dL(constructionMap[rect.right - 1][y].value.point, constructionMap[rect.right + 1][y].value.point, constructionMap[rect.right][y].value.point)
+                            if not bordersAlready[P2dL.id(newLink)] then
+                                bordersAlready[P2dL.id(newLink)] = true
+                                LL.addFirst(borders, newLink)
                             end
-                        elseif constructionMap[rect.right + 1][y]:getValue():getCellType() ~= cellType.LEVEL_BOARDER and not bordersAlready[posLink:new(constructionMap[rect.right][y]:getValue():getPos(), constructionMap[rect.right + 2][y]:getValue():getPos(), constructionMap[rect.right + 1][y]:getValue():getPos()):id()] then
-                            local newLink = posLink:new(constructionMap[rect.right][y]:getValue():getPos(), constructionMap[rect.right + 2][y]:getValue():getPos(), constructionMap[rect.right + 1][y]:getValue():getPos())
-                            bordersAlready[newLink:id()] = true
-                            borders:addFirst(newLink)
+                        elseif constructionMap[rect.right + 1][y].value.cellType ~= CellType.LEVEL_BOARDER and not bordersAlready[P2dL.id(P2dL(constructionMap[rect.right][y].value.point, constructionMap[rect.right + 2][y].value.point, constructionMap[rect.right + 1][y].value.point))] then
+                            local newLink = P2dL(constructionMap[rect.right][y].value.point, constructionMap[rect.right + 2][y].value.point, constructionMap[rect.right + 1][y].value.point)
+                            bordersAlready[P2dL.id(newLink)] = true
+                            LL.addFirst(borders, newLink)
                         end
                     elseif x == rect.left then
-                        if constructionMap[rect.left - 1][y]:getValue():getCellType() == cellType.PATH then constructionMap[rect.left][y]:removeNode()
-                            local wallPoint = constructionMap[rect.left][y]:getValue()
-                            wallPoint:setCellType(cellType.WALL)
-                            exportMap[rect.left][y] = cellType.WALL
-                            pointsAssigned[wallPoint:getPos():id()] = wallPoint
-                            local newLink = posLink:new(constructionMap[rect.left + 1][y]:getValue():getPos(), constructionMap[rect.left - 1][y]:getValue():getPos(), constructionMap[rect.left][y]:getValue():getPos())
-                            if not bordersAlready[newLink:id()] then
-                                bordersAlready[newLink:id()] = true
-                                borders:addFirst(newLink)
+                        if constructionMap[rect.left - 1][y].value.cellType == CellType.PATH then
+                            Tree.removeNode(constructionMap[rect.left][y])
+                            local wallPoint = constructionMap[rect.left][y].value
+                            wallPoint.cellType = CellType.WALL
+                            exportMap[rect.left][y] = CellType.WALL
+                            pointsAssigned[P2d.id(wallPoint.point)] = wallPoint
+                            local newLink = P2dL(constructionMap[rect.left + 1][y].value.point, constructionMap[rect.left - 1][y].value.point, constructionMap[rect.left][y].value.point)
+                            if not bordersAlready[P2dL.id(newLink)] then
+                                bordersAlready[P2dL.id(newLink)] = true
+                                LL.addFirst(borders, newLink)
                             end
-                        elseif constructionMap[rect.left - 1][y]:getValue():getCellType() ~= cellType.LEVEL_BOARDER and not bordersAlready[posLink:new(constructionMap[rect.left][y]:getValue():getPos(), constructionMap[rect.left - 2][y]:getValue():getPos(), constructionMap[rect.left - 1][y]:getValue():getPos()):id()] then
-                            local newLink = posLink:new(constructionMap[rect.left][y]:getValue():getPos(), constructionMap[rect.left - 2][y]:getValue():getPos(), constructionMap[rect.left - 1][y]:getValue():getPos())
-                            bordersAlready[newLink:id()] = true
-                            borders:addFirst(newLink)
+                        elseif constructionMap[rect.left - 1][y].value.cellType ~= CellType.LEVEL_BOARDER and not bordersAlready[P2dL.id(P2dL(constructionMap[rect.left][y].value.point, constructionMap[rect.left - 2][y].value.point, constructionMap[rect.left - 1][y].value.point))] then
+                            local newLink = P2dL(constructionMap[rect.left][y].value.point, constructionMap[rect.left - 2][y].value.point, constructionMap[rect.left - 1][y].value.point)
+                            bordersAlready[P2dL.id(newLink)] = true
+                            LL.addFirst(borders, newLink)
                         end
                     end
                     if y == rect.top then
-                        if constructionMap[x][rect.top + 1]:getValue():getCellType() == cellType.PATH then constructionMap[x][rect.top]:removeNode()
-                            local wallPoint = constructionMap[x][rect.top]:getValue()
-                            wallPoint:setCellType(cellType.WALL)
-                            exportMap[x][rect.top] = cellType.WALL
-                            pointsAssigned[wallPoint:getPos():id()] = wallPoint
-                            local newLink = posLink:new(constructionMap[x][rect.top - 1]:getValue():getPos(), constructionMap[x][rect.top + 1]:getValue():getPos(), constructionMap[x][rect.top]:getValue():getPos())
-                            if not bordersAlready[newLink:id()] then
-                                bordersAlready[newLink:id()] = true
-                                borders:addFirst(newLink)
+                        if constructionMap[x][rect.top + 1].value.cellType == CellType.PATH then
+                            Tree.removeNode(constructionMap[x][rect.top])
+                            local wallPoint = constructionMap[x][rect.top].value
+                            wallPoint.cellType = CellType.WALL
+                            exportMap[x][rect.top] = CellType.WALL
+                            pointsAssigned[P2d.id(wallPoint.point)] = wallPoint
+                            local newLink = P2dL(constructionMap[x][rect.top - 1].value.point, constructionMap[x][rect.top + 1].value.point, constructionMap[x][rect.top].value.point)
+                            if not bordersAlready[P2dL.id(newLink)] then
+                                bordersAlready[P2dL.id(newLink)] = true
+                                LL.addFirst(borders, newLink)
                             end
-                        elseif constructionMap[x][rect.top + 1]:getValue():getCellType() ~= cellType.LEVEL_BOARDER and not bordersAlready[posLink:new(constructionMap[x][rect.top]:getValue():getPos(), constructionMap[x][rect.top + 2]:getValue():getPos(), constructionMap[x][rect.top + 1]:getValue():getPos()):id()] then
-                            local newLink = posLink:new(constructionMap[x][rect.top]:getValue():getPos(), constructionMap[x][rect.top + 2]:getValue():getPos(), constructionMap[x][rect.top + 1]:getValue():getPos())
-                            bordersAlready[newLink:id()] = true
-                            borders:addFirst(newLink)
+                        elseif constructionMap[x][rect.top + 1].value.cellType ~= CellType.LEVEL_BOARDER and not bordersAlready[P2d.id(P2dL(constructionMap[x][rect.top].value.point, constructionMap[x][rect.top + 2].value.point, constructionMap[x][rect.top + 1].value.point))] then
+                            local newLink = P2dL(constructionMap[x][rect.top].value.point, constructionMap[x][rect.top + 2].value.point, constructionMap[x][rect.top + 1].value.point)
+                            bordersAlready[P2dL.id(newLink)] = true
+                            LL.addFirst(borders, newLink)
                         end
                     elseif y == rect.bottom then
-                        if constructionMap[x][rect.bottom - 1]:getValue():getCellType() == cellType.PATH then constructionMap[x][rect.bottom]:removeNode()
-                            local wallPoint = constructionMap[x][rect.bottom]:getValue()
-                            wallPoint:setCellType(cellType.WALL)
-                            exportMap[x][rect.bottom] = cellType.WALL
-                            pointsAssigned[wallPoint:getPos():id()] = wallPoint
-                            local newLink = posLink:new(constructionMap[x][rect.bottom + 1]:getValue():getPos(), constructionMap[x][rect.bottom - 1]:getValue():getPos(), constructionMap[x][rect.bottom]:getValue():getPos())
-                            if not bordersAlready[newLink:id()] then
-                                bordersAlready[newLink:id()] = true
-                                borders:addFirst(newLink)
+                        if constructionMap[x][rect.bottom - 1].value.cellType == CellType.PATH then
+                            Tree.removeNode(constructionMap[x][rect.bottom])
+                            local wallPoint = constructionMap[x][rect.bottom].value
+                            wallPoint.cellType = CellType.WALL
+                            exportMap[x][rect.bottom] = CellType.WALL
+                            pointsAssigned[P2d.id(wallPoint.point)] = wallPoint
+                            local newLink = P2dL(constructionMap[x][rect.bottom + 1].value.point, constructionMap[x][rect.bottom - 1].value.point, constructionMap[x][rect.bottom].value.point)
+                            if not bordersAlready[P2dL.id(newLink)] then
+                                bordersAlready[P2dL.id(newLink)] = true
+                                LL.addFirst(borders, newLink)
                             end
-                        elseif constructionMap[x][rect.bottom - 1]:getValue():getCellType() ~= cellType.LEVEL_BOARDER and not bordersAlready[posLink:new(constructionMap[x][rect.bottom]:getValue():getPos(), constructionMap[x][rect.bottom - 2]:getValue():getPos(), constructionMap[x][rect.bottom - 1]:getValue():getPos()):id()] then
-                            local newLink = posLink:new(constructionMap[x][rect.bottom]:getValue():getPos(), constructionMap[x][rect.bottom - 2]:getValue():getPos(), constructionMap[x][rect.bottom - 1]:getValue():getPos())
-                            bordersAlready[newLink:id()] = true
-                            borders:addFirst(newLink)
+                        elseif constructionMap[x][rect.bottom - 1].value.cellType ~= CellType.LEVEL_BOARDER and not bordersAlready[P2dL.id(P2dL(constructionMap[x][rect.bottom].value.point, constructionMap[x][rect.bottom - 2].value.point, constructionMap[x][rect.bottom - 1].value.point))] then
+                            local newLink = P2dL(constructionMap[x][rect.bottom].value.point, constructionMap[x][rect.bottom - 2].value.point, constructionMap[x][rect.bottom - 1].value.point)
+                            bordersAlready[P2dL.id(newLink)] = true
+                            LL.addFirst(borders, newLink)
                         end
                     end
                 end
@@ -178,23 +182,19 @@ function Mapper:generate(mapSize, maxRoomSize)
     end
 
     -- This while loop connects all the rooms so there is only one path from one room to another
-    while borders:getSize() > 0 do
-        local index = math.random(borders:getSize())
-        local borderLink = borders:removeIndex(index)
-        local borderOne = constructionMap[borderLink:getPosOne():getX()][borderLink:getPosOne():getY()]
-        local borderTwo = constructionMap[borderLink:getPosTwo():getX()][borderLink:getPosTwo():getY()]
-        if borderOne:getValue():getCellType() == cellType.PATH and borderTwo:getValue():getCellType() == cellType.PATH and borderOne:getTopParent() ~= borderTwo:getTopParent() then
-            constructionMap[borderLink:getLinkPos():getX()][borderLink:getLinkPos():getY()]:getValue():setCellType(cellType.PATH)
-            exportMap[borderLink:getLinkPos():getX()][borderLink:getLinkPos():getY()] = cellType.PATH
-            borderOne:graft(borderTwo)
+    while #borders > 0 do
+        local index = math.random(#borders)
+        local borderLink = LL.removeIndex(borders, index)
+        local borderOne = constructionMap[borderLink.pointOne.x][borderLink.pointOne.y]
+        local borderTwo = constructionMap[borderLink.pointTwo.x][borderLink.pointTwo.y]
+        if borderOne.value.cellType == CellType.PATH and borderTwo.value.cellType == CellType.PATH and Tree.getTopParent(borderOne) ~= Tree.getTopParent(borderTwo) then
+            constructionMap[borderLink.linkPoint.x][borderLink.linkPoint.y].value.cellType = CellType.PATH
+            exportMap[borderLink.linkPoint.x][borderLink.linkPoint.y] = CellType.PATH
+            Tree.graft(borderOne, borderTwo)
         end
     end
 
-    local mapReturn = {
-        
-    }
-
-    return exportMap
+    return exportMap -- This file is a mess, enjoy cleaning it up :| Make the mapper type more functional instead of just table with one function in it type thing.
 end
 
 Mapper.__index = Mapper

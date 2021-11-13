@@ -1,6 +1,6 @@
-local linkedList = require("linkedList")
+local ll = require("linkedList")
 
-local Tree = {}
+--[[local Tree = {}
 local TreeProto = {}
 
 function Tree:new(value)
@@ -94,13 +94,13 @@ function TreeProto:getTopParent()
     return top
 end
 
---[[function TreeProto:getChildValues()
+function TreeProto:getChildValues()
     local childArray = {}
     for i = 1, self.children:getSize(), 1 do
         table.insert(childArray, self.children:get(i).value)
     end
     return childArray
-end]] -- This doesn't seem to be used, and is kinda redundant, so I took it out, but it's here if necessary
+end -- This doesn't seem to be used, and is kinda redundant, so I took it out, but it's here if necessary
 
 function TreeProto:printTree() -- prints layers of the tree not connections
     self:getTopParent():printTreeHelp(1)
@@ -118,4 +118,85 @@ function TreeProto:printTreeHelp(layerNum)
     end
 end
 
-return Tree
+return Tree]]
+
+local Tree = {}
+
+function Tree.graft(tree, childTree)
+    local newChild = childTree:getTopParent()
+    newChild.parent = tree
+    ll.addLast(tree.children, newChild)
+end
+
+function Tree.removeBranch(tree)
+    assert(tree.parent ~= nil, "tree.removeBranch(): Tree does not have a parent to detach from.")
+    for i = 1, #tree.parent.children, 1 do
+        if ll.get(tree.parent.children, i) == tree then
+            ll.removeIndex(tree.parent.children, i)
+            break
+        end
+    end
+    tree.parent = nil
+end
+
+function Tree.removeNode(tree)
+    if tree.parent ~= nil then
+        while #tree.children > 0 do
+            local move = ll.removeFirst(tree.children)
+            move.parent = tree.parent
+            ll.addLast(tree.parent.children, move)
+        end
+    elseif #tree.children > 0 then
+        local newParent = ll.removeFirst(tree.children)
+        while #tree.children > 0 do
+            local move = ll.removeFirst(tree.children)
+            move.parent = newParent
+            ll.addLast(newParent.children, move)
+        end
+    end
+end
+
+function Tree.getTopParent(tree)
+    assert(tree ~= nil, "self is nil")
+    local top = tree
+    while tree.parent ~= nil do
+        top = top.parent
+    end
+    return top
+end
+
+function Tree.printTree(tree) -- prints layers of the tree not connections
+    tree.getTopParent(tree).printTreeHelp(1)
+end
+
+local function printTreeHelp(tree, layerNum)
+    if #tree:getChildren() > 0 then
+        print(tostring(tree.value) .. " -> " .. "(" .. layerNum .. "){")
+        for i = 1, #tree.children, 1 do
+            printTreeHelp(ll.get(tree.children,i), layerNum + 1)
+        end
+        print("}(" .. layerNum .. ")\n")
+    else
+        print(tostring(tree.value) .. " -> " .. "botttom of tree\n")
+    end
+end
+
+setmetatable(Tree, {
+    __call = function(self, value)
+        local nTree = {
+            value = value,
+            children = ll(),
+            childArray = {},
+            childArrayChanged = false,
+            parent = nil,
+        }
+
+        setmetatable(nTree, {
+            __tostring = function(self)
+            end,
+            __metatable = "Tree",
+        })
+
+        return nTree
+    end,
+})
