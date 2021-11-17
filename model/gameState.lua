@@ -1,9 +1,9 @@
 local mapGen = require("mapGen")
-local settings = require("model.settings")
-local pos = require("pos")
+local set = require("model.settings")
+local pos = require("Point2D")
 local cellType = require("cellType")
 
-local gameStateProto = {}
+--[[local gameStateProto = {}
 
 local instance = nil
 
@@ -18,7 +18,7 @@ local function getGameState() -- editing and retrieving any of the members of th
     -- Check for save file here
 
     -- Private
-    local bigMap = mapGen:generate(s.mapSize, s.maxRoomSize) -- This class still has a lot of work. I think it should probably look a lot closer to the settings singleton.
+    local bigMap = mapGen:generate(s.mapSize, s.maxRoomSize)
     local playerPos = pos:new(3, 3)
     local smallMapCenterPos = pos:new(2, 2)
 
@@ -66,4 +66,35 @@ gameStateProto.__index = gameStateProto
 
 getGameState() -- This probably shouldn't be here in the end and should instead should lazily init the singleton, but until GameState:get() is thread safe this is here.
 
-return getGameState
+return getGameState]]
+
+
+-- Check for save file here
+
+local GameState = {
+    bigMap = mapGen.generate(set.mapSize, set.maxRoomSize),
+    playerPos = pos(3, 3),
+    smallMapCenterPos = pos(2, 2),
+}
+
+setmetatable(GameState, {
+    __metatable = "GameState",
+})
+
+function GameState.getSmallMap()
+    local newSmallMap = {}
+    for xMod = -3, 3, 1 do
+        newSmallMap[xMod + 3] = {}
+        for yMod = -3, 3, 1 do
+            local newPos = pos(GameState.smallMapCenterPos.x + xMod, GameState.smallMapCenterPos.y + yMod)
+            if newPos.x > 0 and newPos.x <= set.mapSize and newPos.y > 0 and newPos.y <= set.mapSize then
+                newSmallMap[xMod + 3][yMod + 3] = GameState.bigMap[newPos.x][newPos.y]
+            else
+                newSmallMap[xMod + 3][yMod + 3] = cellType.LEVEL_BOARDER
+            end
+        end
+    end
+    return newSmallMap
+end
+
+return GameState

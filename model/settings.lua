@@ -1,19 +1,7 @@
 local gds = require("model.defaultSettings")
 
-local instance = nil
+-- Check for save file here. If there is one import those settings instead
 
-local function getSettings()
-    if instance then
-        return instance
-    end
+local Settings = gds()
 
-    -- Check for save file
-
-    instance = gds()
-
-    return instance
-end
-
-getSettings()
-
-return getSettings
+return Settings

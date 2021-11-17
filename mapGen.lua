@@ -1,9 +1,9 @@
-local Cell = require("cell")
+local Cell = require("Cell")
 local CellType = require("cellType")
-local P2d = require("pos")
+local P2d = require("Point2D")
 local Tree = require("tree")
 local LL = require("linkedList")
-local P2dL = require("posLink")
+local P2dL = require("Point2DLink")
 
 local Mapper = {} -- A glorified version of Kruskal's Algorithm the cells in the maze aren't all uniform squares.
 

@@ -48,5 +48,9 @@ setmetatable(Cell, {
             end,
             __metatable = "Cell",
         })
+
+        return nCell
     end,
 })
+
+return Cell

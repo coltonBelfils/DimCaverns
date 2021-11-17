@@ -1,4 +1,4 @@
-local ll = require("linkedList")
+local ll = require("LinkedList")
 
 --[[local Tree = {}
 local TreeProto = {}
@@ -123,7 +123,7 @@ return Tree]]
 local Tree = {}
 
 function Tree.graft(tree, childTree)
-    local newChild = childTree:getTopParent()
+    local newChild = Tree.getTopParent(childTree)
     newChild.parent = tree
     ll.addLast(tree.children, newChild)
 end
@@ -170,7 +170,7 @@ function Tree.printTree(tree) -- prints layers of the tree not connections
 end
 
 local function printTreeHelp(tree, layerNum)
-    if #tree:getChildren() > 0 then
+    if #tree.children > 0 then
         print(tostring(tree.value) .. " -> " .. "(" .. layerNum .. "){")
         for i = 1, #tree.children, 1 do
             printTreeHelp(ll.get(tree.children,i), layerNum + 1)
@@ -200,3 +200,5 @@ setmetatable(Tree, {
         return nTree
     end,
 })
+
+return Tree
