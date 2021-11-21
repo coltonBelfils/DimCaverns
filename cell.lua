@@ -44,7 +44,7 @@ setmetatable(Cell, {
 
         setmetatable(nCell, {
             __tostring = function(self)
-                return tostring(tostring(self.point) .. " - " .. self.cellType)
+                return tostring(tostring(self.point) .. " - " .. tostring(self.cellType))
             end,
             __metatable = "Cell",
         })

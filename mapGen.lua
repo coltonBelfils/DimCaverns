@@ -33,21 +33,22 @@ function Mapper.generate(mapSize, maxRoomSize)
             end
         end
     end
+    print(points.size)
 
     -- This while loop is what creates all the rooms. 
-    while #points > 0 do -- This while loop could probably be optimized a little (a lot).
-        local index = math.random(#points)
+    while points.size > 0 do -- This while loop could probably be optimized a little (a lot).
+        local index = math.random(points.size)
         local cellTree = LL.removeIndex(points, index) -- get the starting point for the room
-        local cellPoint = cellTree.value
-        if pointsAssigned[P2d.id(cellPoint.point)] == nil then -- check if that point is available
-            pointsAssigned[P2d.id(cellPoint.point)] = cellPoint -- make that point unavailable for the future
+        local cellPoint = cellTree.value.point
+        if pointsAssigned[P2d.id(cellPoint)] == nil then -- check if that point is available
+            pointsAssigned[P2d.id(cellPoint)] = cellPoint -- make that point unavailable for the future
             local xDist = math.random(3, maxRoomSize)
             local yDist = math.random(3, maxRoomSize)
             local rect = {
-                top = cellPoint.point.y,
-                bottom = cellPoint.point.y,
-                left = cellPoint.point.x,
-                right = cellPoint.point.x,
+                top = cellPoint.y,
+                bottom = cellPoint.y,
+                left = cellPoint.x,
+                right = cellPoint.x,
             }
             local xPacked = false
             local yPacked = false
@@ -153,7 +154,7 @@ function Mapper.generate(mapSize, maxRoomSize)
                                 bordersAlready[P2dL.id(newLink)] = true
                                 LL.addFirst(borders, newLink)
                             end
-                        elseif constructionMap[x][rect.top + 1].value.cellType ~= CellType.LEVEL_BOARDER and not bordersAlready[P2d.id(P2dL(constructionMap[x][rect.top].value.point, constructionMap[x][rect.top + 2].value.point, constructionMap[x][rect.top + 1].value.point))] then
+                        elseif constructionMap[x][rect.top + 1].value.cellType ~= CellType.LEVEL_BOARDER and not bordersAlready[P2dL.id(P2dL(constructionMap[x][rect.top].value.point, constructionMap[x][rect.top + 2].value.point, constructionMap[x][rect.top + 1].value.point))] then
                             local newLink = P2dL(constructionMap[x][rect.top].value.point, constructionMap[x][rect.top + 2].value.point, constructionMap[x][rect.top + 1].value.point)
                             bordersAlready[P2dL.id(newLink)] = true
                             LL.addFirst(borders, newLink)
@@ -182,8 +183,8 @@ function Mapper.generate(mapSize, maxRoomSize)
     end
 
     -- This while loop connects all the rooms so there is only one path from one room to another
-    while #borders > 0 do
-        local index = math.random(#borders)
+    while borders.size > 0 do
+        local index = math.random(borders.size)
         local borderLink = LL.removeIndex(borders, index)
         local borderOne = constructionMap[borderLink.pointOne.x][borderLink.pointOne.y]
         local borderTwo = constructionMap[borderLink.pointTwo.x][borderLink.pointTwo.y]

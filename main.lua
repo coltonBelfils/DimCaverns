@@ -1,6 +1,6 @@
 local cellType = require("cellType")
 local mapGen = require("mapGen")
-local pos = require("Point2D")
+local P2D = require("Point2D")
 local animationManager = require("animationManager")
 local animationTask = require("animationTask")
 local animationOffset = require("animationOffset")
@@ -22,8 +22,8 @@ local playerLocation
 local PLAYER_ANIMATION_ID = "PLAYER_ANIMATION_ID"
 local MAP_ANIMATION_ID = "MAP_ANIMATION_ID"
 
-local playerAnimationOffset = animationOffset() -- do this for map too and then put it in the key press and draw functions
-local mapAnimationOffset = animationOffset()
+local playerAnimationOffset = P2D() -- do this for map too and then put it in the key press and draw functions
+local mapAnimationOffset = P2D()
 
 local rope
 
@@ -35,34 +35,34 @@ function love.load()
     love.graphics.setBackgroundColor(black)
     love.graphics.setColor(white)
 
-    rope = ropeItem(gameState().bigMap)
+    --rope = ropeItem(gameState.bigMap)
     printMap()
 
-    if gameState():getBigMap()[2][2] == cellType.PATH then
-        centerLocation = pos(2, 2)
+    if gameState.bigMap[2][2] == cellType.PATH then
+        centerLocation = P2D(2, 2)
         -- playerLocation = pos(2, 2)
-    elseif gameState():getBigMap()[3][2] == cellType.PATH then
-        centerLocation = pos(3, 2)
+    elseif gameState.bigMap[3][2] == cellType.PATH then
+        centerLocation = P2D(3, 2)
         -- playerLocation = pos(3, 2)
-    elseif gameState():getBigMap()[2][3] == cellType.PATH then
-        centerLocation = pos(2, 3)
+    elseif gameState.bigMap[2][3] == cellType.PATH then
+        centerLocation = P2D(2, 3)
         -- playerLocation = pos(2, 3)
     else
         error("starting player location didn't work")
     end
 
-    playerLocation = pos(3, 3)
+    playerLocation = P2D(3, 3)
 
-    smallMap = gameState():getSmallMap()
+    smallMap = gameState:getSmallMap()
     -- rope:equip(smallToBigPos(playerLocation, centerLocation))
 end
 
 function printMap()
     local str = ""
-    local size = settings().mapSize
+    local size = settings.mapSize
     for y = size, 1, -1 do
         for x = 1, size, 1 do
-            str = str .. tostring(gameState():getBigMap()[x][y].print)
+            str = str .. tostring(gameState.bigMap[x][y].print)
         end
         str = str .. "\n"
     end
@@ -77,7 +77,7 @@ end
 function love.draw()
     for x = 0, 6, 1 do
         for y = 0, 6, 1 do
-            local type = smallMap[x][y]
+            local type = gameState.getSmallMap()[x][y]
             love.graphics.setColor(type.color or black)
             love.graphics.rectangle("fill", (((x - 1) * 48) + 80) - (mapAnimationOffset.x * 48), ((((y * -1) + 6) - 1) * 48) + (mapAnimationOffset.y * 48), 48, 48) -- The (y * -1) + 6) part is because the y axis needs to be inverted. The drawing canvas has (0,0) in the upper left, but the maps have it in the lower left.
         end
@@ -86,7 +86,7 @@ function love.draw()
     love.graphics.setColor({1, 0, 0})
 
     -- local smallPlayerLocation = bigToSmallPos(playerLocation, centerLocation)
-    love.graphics.rectangle("line", (((gameState():getPlayerPos().x - 1) * 48) + 80) + (playerAnimationOffset.x * 48), ((((gameState():getPlayerPos().y * -1) + 6) - 1) * 48) - (playerAnimationOffset.y * 48), 48, 48) -- The (y * -1) + 6) part is because the y axis needs to be inverted. The drawing canvas has (0,0) in the upper left, but the maps have it in the lower left.
+    love.graphics.rectangle("line", (((gameState.playerPos.x - 1) * 48) + 80) + (playerAnimationOffset.x * 48), ((((gameState.playerPos.y * -1) + 6) - 1) * 48) - (playerAnimationOffset.y * 48), 48, 48) -- The (y * -1) + 6) part is because the y axis needs to be inverted. The drawing canvas has (0,0) in the upper left, but the maps have it in the lower left.
 
     love.graphics.setColor({.5, .5, .5})
     love.graphics.rectangle("fill", 0, 0, 80, 240)
@@ -99,55 +99,55 @@ function love.keypressed(key, scancode, isrepeat) -- something's not right with 
         -- local smallPlayerLocation = bigToSmallPos(playerLocation, centerLocation)
         local newCenterLocation = centerLocation
         if key == 'w' then
-            newPlayerLocation = pos(playerLocation.x, playerLocation.y + 1)
+            newPlayerLocation = P2D(playerLocation.x, playerLocation.y + 1)
             if newPlayerLocation.y > 4 then
-                newCenterLocation = pos(centerLocation.x, centerLocation.y + 1)
-                newPlayerLocation = pos(playerLocation.x, 4)
+                newCenterLocation = P2D(centerLocation.x, centerLocation.y + 1)
+                newPlayerLocation = P2D(playerLocation.x, 4)
             end
         elseif key == 'd' then
-            newPlayerLocation = pos(playerLocation.x + 1, playerLocation.y)
+            newPlayerLocation = P2D(playerLocation.x + 1, playerLocation.y)
             if newPlayerLocation.x > 4 then
-                newCenterLocation = pos(centerLocation.x + 1, centerLocation.y)
-                newPlayerLocation = pos(4, newPlayerLocation.y)
+                newCenterLocation = P2D(centerLocation.x + 1, centerLocation.y)
+                newPlayerLocation = P2D(4, newPlayerLocation.y)
             end
         elseif key == 's' then
-            newPlayerLocation = pos(playerLocation.x, playerLocation.y - 1)
+            newPlayerLocation = P2D(playerLocation.x, playerLocation.y - 1)
             if newPlayerLocation.y < 2 then
-                newCenterLocation = pos(centerLocation.x, centerLocation.y - 1)
-                newPlayerLocation = pos(playerLocation.x, 2)
+                newCenterLocation = P2D(centerLocation.x, centerLocation.y - 1)
+                newPlayerLocation = P2D(playerLocation.x, 2)
             end
         elseif key == 'a' then
-            newPlayerLocation = pos(playerLocation.x - 1, playerLocation.y)
+            newPlayerLocation = P2D(playerLocation.x - 1, playerLocation.y)
             if newPlayerLocation.x < 2 then
-                newCenterLocation = pos(centerLocation.x - 1, centerLocation.y)
-                newPlayerLocation = pos(2, newPlayerLocation.y)
+                newCenterLocation = P2D(centerLocation.x - 1, centerLocation.y)
+                newPlayerLocation = P2D(2, newPlayerLocation.y)
             end
         elseif key == 'e' then
-            local bigPlayerPos = smallToBigPos(playerLocation, centerLocation)
+            --[[local bigPlayerPos = smallToBigPos(playerLocation, centerLocation)
             if rope.equiped then
                 rope:unequip(bigPlayerPos)
             else
                 rope:equip(bigPlayerPos)
-            end
+            end]]
         end
 
         local bigPlayerPos = smallToBigPos(newPlayerLocation, newCenterLocation)
-        if (playerLocation ~= newPlayerLocation or centerLocation ~= newCenterLocation) and gameState():getBigMap()[bigPlayerPos.x][bigPlayerPos.y].canMoveTo then
+        if (playerLocation ~= newPlayerLocation or centerLocation ~= newCenterLocation) and gameState.bigMap[bigPlayerPos.x][bigPlayerPos.y].canMoveTo then
             -- animationManager:addTask(animationTask(centerLocation, newCenterLocation, .08, mapAnimationOffset), MAP_ANIMATION_ID)
             -- animationManager:addTask(animationTask(playerLocation, newPlayerLocation, .08, playerAnimationOffset), PLAYER_ANIMATION_ID)
 
             centerLocation = newCenterLocation
             playerLocation = newPlayerLocation
-            rope:movedTo(bigPlayerPos)
+            --rope:movedTo(bigPlayerPos)
         end
-        smallMap = gameState():getSmallMap()
+        smallMap = gameState.getSmallMap()
     end
 end
 
 function smallToBigPos(smallPos, bigPosAnchor)
-    return pos(bigPosAnchor.x + (smallPos.x - 3), bigPosAnchor.y + (smallPos.y - 3))
+    return P2D(bigPosAnchor.x + (smallPos.x - 3), bigPosAnchor.y + (smallPos.y - 3))
 end
 
 function bigToSmallPos(bigPos, bigPosAnchor)
-    return pos(bigPos.x - bigPosAnchor.x + 3, bigPos.y - bigPosAnchor.y + 3)
+    return P2D(bigPos.x - bigPosAnchor.x + 3, bigPos.y - bigPosAnchor.y + 3)
 end

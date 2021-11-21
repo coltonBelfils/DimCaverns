@@ -59,8 +59,8 @@ end
 setmetatable(Point2D, {
     __call = function(self, x, y)
         local nPoint2D = {
-            x = x,
-            y = y,
+            x = x or 0,
+            y = y or 0,
         }
 
         setmetatable(nPoint2D, {

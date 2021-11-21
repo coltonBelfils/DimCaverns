@@ -130,7 +130,7 @@ end
 
 function Tree.removeBranch(tree)
     assert(tree.parent ~= nil, "tree.removeBranch(): Tree does not have a parent to detach from.")
-    for i = 1, #tree.parent.children, 1 do
+    for i = 1, tree.parent.children.size, 1 do
         if ll.get(tree.parent.children, i) == tree then
             ll.removeIndex(tree.parent.children, i)
             break
@@ -141,14 +141,14 @@ end
 
 function Tree.removeNode(tree)
     if tree.parent ~= nil then
-        while #tree.children > 0 do
+        while tree.children.size > 0 do
             local move = ll.removeFirst(tree.children)
             move.parent = tree.parent
             ll.addLast(tree.parent.children, move)
         end
-    elseif #tree.children > 0 then
+    elseif tree.children.size > 0 then
         local newParent = ll.removeFirst(tree.children)
-        while #tree.children > 0 do
+        while tree.children.size > 0 do
             local move = ll.removeFirst(tree.children)
             move.parent = newParent
             ll.addLast(newParent.children, move)
@@ -159,7 +159,7 @@ end
 function Tree.getTopParent(tree)
     assert(tree ~= nil, "self is nil")
     local top = tree
-    while tree.parent ~= nil do
+    while top.parent ~= nil do
         top = top.parent
     end
     return top
@@ -170,9 +170,9 @@ function Tree.printTree(tree) -- prints layers of the tree not connections
 end
 
 local function printTreeHelp(tree, layerNum)
-    if #tree.children > 0 then
+    if tree.children.size > 0 then
         print(tostring(tree.value) .. " -> " .. "(" .. layerNum .. "){")
-        for i = 1, #tree.children, 1 do
+        for i = 1, tree.children.size, 1 do
             printTreeHelp(ll.get(tree.children,i), layerNum + 1)
         end
         print("}(" .. layerNum .. ")\n")
@@ -193,6 +193,7 @@ setmetatable(Tree, {
 
         setmetatable(nTree, {
             __tostring = function(self)
+                return "Value: " .. tostring(self.value) .. ", Parent: [ " .. tostring(self.parent) .. " ] "
             end,
             __metatable = "Tree",
         })

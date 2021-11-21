@@ -174,13 +174,13 @@ function LinkedList.addLast(list, value)
         prev = last,
     }
     last.next = list.tail.prev
-    list.onHand[#list] = list.tail.prev
+    list.onHand[list.size] = list.tail.prev
     list.size = list.size + 1
 end
 
 function LinkedList.addIndex(list, value, index) -- inserts after the specified index. Index 0 is addFirst. Index size is addLast
     assert(type(index) == "number") -- this needs to turn into function decorators and the checks lib
-    assert(index >= 0 and index <= #list, "Invalid Linked List index: " .. index)
+    assert(index >= 0 and index <= list.size, "Invalid Linked List index: " .. index)
     local cur = list.head
     for i = 0, index, 1 do
         cur = cur.next
@@ -198,7 +198,7 @@ function LinkedList.addIndex(list, value, index) -- inserts after the specified 
 end
 
 function LinkedList.removeFirst(list)
-    assert(#list > 0, "No Linked List items to remove")
+    assert(list.size > 0, "No Linked List items to remove")
     local value = list.head.next.value
     list.head.next = list.head.next.next
     list.head.next.prev = list.head
@@ -208,18 +208,18 @@ function LinkedList.removeFirst(list)
 end
 
 function LinkedList.removeLast(list)
-    assert(#list > 0, "No Linked List items to remove")
+    assert(list.size > 0, "No Linked List items to remove")
     local value = list.tail.prev.value
     list.tail.prev = list.tail.prev.prev
     list.tail.prev.next = list.tail
-    list.onHand[#list] = nil
+    list.onHand[list.size] = nil
     list.size = list.size - 1
     return value
 end
 
 function LinkedList.removeIndex(list, index)
     assert(type(index) == "number") -- this needs to turn into function decorators and the checks lib
-    assert(index > 0 and index <= #list, "Invalid Linked List index: " .. index)
+    assert(index > 0 and index <= list.size, "Invalid Linked List index: " .. index)
     local cur = list.head -- check on-hand table before going through the for loop
     for i = 1, index, 1 do
         cur = cur.next
@@ -233,12 +233,12 @@ end
 
 function LinkedList.get(list, index)
     assert(type(index) == "number") -- this needs to turn into function decorators and the checks lib
-    assert(index > 0 and index <= #list, "Invalid Linked List index: " .. index)
+    assert(index > 0 and index <= list.size, "Invalid Linked List index: " .. index)
     if list.onHand[index] ~= nil then -- check on-hand table before traversing to that index
         if index > 1 then
             list.onHand[index - 1] = list.onHand[index].prev
         end
-        if index < #list then
+        if index < list.size then
             list.onHand[index + 1] = list.onHand[index].next
         end
         return list.onHand[index].value
@@ -250,7 +250,7 @@ function LinkedList.get(list, index)
             if i > 1 then
                 list.onHand[i - 1] = cur.prev
             end
-            if i < #list then
+            if i < list.size then
                 list.onHand[i + 1] = cur.next
             end
         end
@@ -259,7 +259,7 @@ function LinkedList.get(list, index)
 end
 
 function LinkedList.printList(list)
-    for i = 1, #list, 1 do
+    for i = 1, list.size, 1 do
         print(tostring(LinkedList.get(list, i)))
     end
 end
@@ -290,8 +290,8 @@ setmetatable(LinkedList, {
             __tostring = function(self)
                 return "tostring not currently supported for Linkedlist"
             end,
-            __len = function(self)
-                return nLL.size
+            __len = function(self) -- This metamethod is not supported in the current version of Love2D :/ It uses Lua 5.1 and __len is in Lua 5.2
+                return self.size
             end,
             __metatable = "LinkedList",
         })

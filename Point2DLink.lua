@@ -75,8 +75,7 @@ setmetatable(Point2DLink, {
             nLink.pointOne = point
             nLink.pointTwo = otherPoint
         else
-            assert((point.x + 2 == otherPoint.x and point.x + 1 == linkPoint.x) or
-                       (point.y + 2 == otherPoint.y and point.y + 1 == linkPoint.y), "Invalid Link")
+            assert((point.x + 2 == otherPoint.x and point.x + 1 == linkPoint.x) or (point.y + 2 == otherPoint.y and point.y + 1 == linkPoint.y), "Invalid Link")
             nLink.pointOne = otherPoint
             nLink.pointTwo = point
         end
