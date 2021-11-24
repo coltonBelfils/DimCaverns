@@ -33,7 +33,6 @@ function Mapper.generate(mapSize, maxRoomSize)
             end
         end
     end
-    print(points.size)
 
     -- This while loop is what creates all the rooms. 
     while points.size > 0 do -- This while loop could probably be optimized a little (a lot).
